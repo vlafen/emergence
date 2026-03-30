@@ -26,9 +26,9 @@ const D=[
 ]
 
 const SECTS=[
-  {n:'All',c:'var(--text)',sl:'',cnt:20},
+  {n:'All',c:'#2563eb',sl:'',cnt:20},
   {n:'Health',c:'#16a34a',sl:'Health',cnt:4},
-  {n:'Software Impl.',c:'#d97706',sl:'Software',cnt:3},
+  {n:'Software',c:'#d97706',sl:'Software',cnt:3},
   {n:'Financial',c:'#2563eb',sl:'Financial',cnt:3},
   {n:'Legal',c:'#7c3aed',sl:'Legal',cnt:4},
   {n:'Security',c:'#dc2626',sl:'Security',cnt:2},
@@ -36,6 +36,8 @@ const SECTS=[
   {n:'Industrial',c:'#b45309',sl:'Industrial',cnt:1},
   {n:'AI Impl.',c:'#15803d',sl:'AI Impl.',cnt:1},
 ]
+
+const STAGES=['Seed','Series A','Series B','Series C']
 
 function fmt(n:number){if(!n)return'—';if(n>=1000)return`$${(n/1000).toFixed(1)}B`;return`$${n}M`}
 function ini(n:string){return n.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}
@@ -67,10 +69,10 @@ function exportToCSV(companies:typeof D){
 
 export default function DashboardPage(){
   const [sec,setSec]=useState('')
+  const [stage,setStage]=useState('')
   const [q,setQ]=useState('')
   const [srt,setSrt]=useState('r')
   const [view,setView]=useState<'t'|'g'>('t')
-  const [theme,setTheme]=useState<'dark'|'light'>('light')
   const [cmdOpen,setCmdOpen]=useState(false)
   const [cmdQ,setCmdQ]=useState('')
   const [cmdSel,setCmdSel]=useState(0)
@@ -100,10 +102,11 @@ export default function DashboardPage(){
   const data=useMemo(()=>{
     let d=[...D]
     if(sec) d=d.filter(c=>c.sec===sec)
+    if(stage) d=d.filter(c=>c.st===stage)
     if(q) d=d.filter(c=>c.n.toLowerCase().includes(q.toLowerCase())||c.s.toLowerCase().includes(q.toLowerCase())||c.inv.some((i:string)=>i.toLowerCase().includes(q.toLowerCase())))
     d.sort((a,b)=>srt==='n'?a.n.localeCompare(b.n):srt==='v'?b.v-a.v:srt==='e'?b.e-a.e:srt==='y'?b.y-a.y:b.r-a.r)
     return d
-  },[sec,q,srt])
+  },[sec,stage,q,srt])
 
   const cmdResults=useMemo(()=>{
     if(!cmdQ) return CMD_DATA.slice(0,6)
@@ -128,16 +131,6 @@ export default function DashboardPage(){
   }
 
   useEffect(()=>{
-    const saved=localStorage.getItem('theme') as 'dark'|'light'|null
-    if(saved) setTheme(saved)
-  },[])
-
-  useEffect(()=>{
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('theme', theme)
-  },[theme])
-
-  useEffect(()=>{
     function onKey(e:KeyboardEvent){
       if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openCmd()}
       if(e.key==='Escape'&&cmdOpen) closeCmd()
@@ -146,150 +139,219 @@ export default function DashboardPage(){
     return()=>window.removeEventListener('keydown',onKey)
   },[cmdOpen])
 
+  const roundColor=(st:string)=>{
+    if(st==='Series C') return{bg:'rgba(124,58,237,.12)',c:'#a78bfa',b:'rgba(124,58,237,.25)'}
+    if(st==='Series B') return{bg:'rgba(37,99,235,.1)',c:'#7aaff7',b:'rgba(37,99,235,.22)'}
+    if(st==='Series A') return{bg:'rgba(16,185,129,.1)',c:'#6ee7b7',b:'rgba(16,185,129,.22)'}
+    return{bg:'rgba(245,158,11,.1)',c:'#fcd34d',b:'rgba(245,158,11,.22)'}
+  }
+
   return(
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
-        :root,[data-theme=light],html[data-theme=light]{--bg:#ffffff;--bg2:#f4f5f7;--bg3:#e8eaed;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);--text:#0d0d0d;--t2:#0d0d0d;--t3:#444444;--ac:#1a9e6e;--ac-bg:rgba(26,158,110,.07);--ac-b:rgba(26,158,110,.18)}
-        [data-theme=dark],html[data-theme=dark]{--bg:#08080f;--bg2:#0d0d1a;--bg3:#111124;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#ffffff;--t2:rgba(255,255,255,1);--t3:rgba(255,255,255,1);--ac:#5CD2A2;--ac-bg:rgba(92,210,162,.08);--ac-b:rgba(92,210,162,.2)}
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+        :root{
+          --bg:#0a0a0f;
+          --bg2:#111118;
+          --bg3:#1a1a24;
+          --border:rgba(255,255,255,.07);
+          --border2:rgba(255,255,255,.13);
+          --text:#f0f4fa;
+          --t2:#c8d4e8;
+          --t3:rgba(200,212,232,.45);
+          --ac:#2563EB;
+          --ac-bg:rgba(37,99,235,.1);
+          --ac-b:rgba(37,99,235,.25);
+          --ac-text:#7aaff7;
+        }
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;padding:0}
-        .tab:hover{color:var(--t2)}
-        .sb-r:hover{background:var(--bg2)}
-        .sb-r.on{background:var(--ac-bg)}
-        .sb-r.on .sb-n{color:var(--ac);font-weight:600}
-        tbody tr:hover{background:var(--bg2)}
-        .gc:hover{border-color:var(--border2)}
+        body{font-family:'DM Sans',sans-serif;margin:0;padding:0;background:var(--bg);color:var(--text)}
+        .nav-item:hover{background:rgba(255,255,255,.04);color:var(--t2)}
+        .nav-item.active{background:var(--ac-bg);color:var(--ac-text);border-left:2px solid var(--ac)}
+        .pill:hover{border-color:rgba(37,99,235,.35);color:var(--t2)}
+        .pill.active{background:var(--ac-bg);border-color:var(--ac-b);color:var(--ac-text)}
+        .stage-pill:hover{border-color:rgba(255,255,255,.2);color:var(--t2)}
+        .stage-pill.active{background:var(--ac-bg);border-color:var(--ac-b);color:var(--ac-text)}
+        tbody tr:hover{background:rgba(37,99,235,.04)}
         .ich:hover{border-color:var(--border2);color:var(--text)}
-        .wl-star:hover{color:#5CD2A2!important;border-color:rgba(92,210,162,.3)!important}
-        input[type=checkbox]{accent-color:var(--ac);width:14px;height:14px;cursor:pointer;flex-shrink:0}
+        .wl-star:hover{color:var(--ac-text)!important;border-color:var(--ac-b)!important}
+        .view-btn.active{background:var(--ac-bg);color:var(--ac-text)}
+        input[type=checkbox]{accent-color:var(--ac);width:14px;height:14px;cursor:pointer}
         input[type=text]{outline:none}input::placeholder{color:var(--t3)}
         button:focus{outline:none}select:focus{outline:none}
+        ::-webkit-scrollbar{width:4px;height:4px}
+        ::-webkit-scrollbar-track{background:transparent}
+        ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
       `}</style>
 
-      {/* Toast */}
-      {toast&&<div style={{position:'fixed',bottom:24,right:24,zIndex:2000,padding:'10px 18px',borderRadius:8,background:'var(--bg)',border:'1px solid var(--ac-b)',fontSize:13,fontWeight:500,color:'var(--ac)',boxShadow:'0 4px 20px rgba(0,0,0,.12)'}}>{toast}</div>}
+      {toast&&<div style={{position:'fixed',bottom:24,right:24,zIndex:2000,padding:'10px 18px',borderRadius:8,background:'var(--bg2)',border:'1px solid var(--ac-b)',fontSize:13,fontWeight:500,color:'var(--ac-text)',boxShadow:'0 4px 20px rgba(0,0,0,.3)'}}>{toast}</div>}
 
-      <div data-theme={theme} style={{height:'100vh',display:'flex',flexDirection:'column',overflow:'hidden',background:'var(--bg)',color:'var(--text)',fontFamily:"'Plus Jakarta Sans',sans-serif",transition:'background .2s,color .2s'}}>
+      <div style={{height:'100vh',display:'flex',overflow:'hidden',background:'var(--bg)',color:'var(--text)'}}>
 
-        {/* NAV */}
-        <nav style={{height:48,display:'flex',alignItems:'center',padding:'0 20px',background:'var(--bg)',borderBottom:'1px solid var(--border)',flexShrink:0}}>
-          <div onClick={()=>router.push('/')} style={{display:'flex',alignItems:'center',gap:7,fontSize:14,fontWeight:700,letterSpacing:'.1em',cursor:'pointer'}}>
-            <div style={{width:7,height:7,borderRadius:'50%',background:'var(--ac)'}}/>
-            INTELLIGENCE
+        {/* LEFT SIDEBAR */}
+        <aside style={{width:220,flexShrink:0,background:'var(--bg2)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',height:'100vh'}}>
+          {/* Logo */}
+          <div style={{display:'flex',alignItems:'center',gap:10,padding:'14px 16px 12px',borderBottom:'1px solid var(--border)'}}>
+            <div onClick={()=>router.push('/')} style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer'}}>
+              <div style={{width:28,height:28,borderRadius:6,background:'var(--ac)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:800,color:'#fff',flexShrink:0}}>EM</div>
+              <div>
+                <div style={{fontSize:12,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--text)'}}>EmergentMap</div>
+                <div style={{fontSize:9,color:'var(--t3)',letterSpacing:'.03em'}}>AI-Native Services</div>
+              </div>
+            </div>
           </div>
-          <div style={{display:'flex',marginLeft:20}}>
-            {[['Dashboard','/dashboard'],['Funds','/funds'],['Watchlist','/watchlist']].map(([t,href],i)=>(
-              <div key={t} className="tab" onClick={()=>router.push(href)} style={{padding:'0 14px',height:48,display:'flex',alignItems:'center',fontSize:14,fontWeight:500,color:i===0?'var(--text)':'var(--t3)',cursor:'pointer',borderBottom:i===0?'2px solid var(--ac)':'2px solid transparent',transition:'all .15s'}}>
-                {t}{t==='Watchlist'&&wl.size>0&&<span style={{marginLeft:5,fontSize:10,fontWeight:700,background:'var(--ac)',color:'#fff',borderRadius:10,padding:'1px 5px'}}>{wl.size}</span>}
+
+          {/* Search */}
+          <div style={{padding:'10px 12px',borderBottom:'1px solid var(--border)'}}>
+            <div onClick={openCmd} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',background:'rgba(255,255,255,.04)',border:'1px solid var(--border)',borderRadius:7,cursor:'pointer'}}>
+              <span style={{fontSize:13,color:'var(--t3)'}}>⌕</span>
+              <span style={{fontSize:12,color:'var(--t3)',flex:1}}>Search…</span>
+              <span style={{fontSize:9,background:'rgba(255,255,255,.05)',border:'1px solid var(--border)',borderRadius:3,padding:'1px 5px',color:'var(--t3)'}}>⌘K</span>
+            </div>
+          </div>
+
+          {/* Nav */}
+          <div style={{padding:'12px 12px 4px'}}>
+            <div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(200,212,232,.2)',padding:'0 6px',marginBottom:4}}>Platform</div>
+            {[
+              {icon:'⊞',label:'Dashboard',href:'/dashboard',badge:String(D.length),active:true},
+              {icon:'◈',label:'Funds',href:'/funds',badge:String(FUNDS.length),active:false},
+              {icon:'☆',label:'Watchlist',href:'/watchlist',badge:wl.size>0?String(wl.size):'',active:false},
+              {icon:'◎',label:'Market Map',href:'/dashboard',badge:'New',active:false},
+            ].map(item=>(
+              <div key={item.label} className={`nav-item${item.active?' active':''}`}
+                onClick={()=>router.push(item.href)}
+                style={{display:'flex',alignItems:'center',gap:9,padding:'7px 8px',borderRadius:6,cursor:'pointer',color:'var(--t3)',transition:'all .12s',fontSize:13,borderLeft:'2px solid transparent',marginBottom:1}}>
+                <span style={{fontSize:13,width:16,textAlign:'center',flexShrink:0}}>{item.icon}</span>
+                <span style={{flex:1}}>{item.label}</span>
+                {item.badge&&<span style={{fontSize:9,fontFamily:"'DM Mono',monospace",background:item.badge==='New'?'rgba(37,99,235,.15)':'rgba(255,255,255,.06)',padding:'2px 6px',borderRadius:10,color:item.badge==='New'?'var(--ac-text)':'rgba(200,212,232,.4)'}}>{item.badge}</span>}
               </div>
             ))}
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:7,marginLeft:'auto'}}>
-            <div onClick={openCmd} onMouseOver={e=>(e.currentTarget.style.borderColor='var(--border2)')} onMouseOut={e=>(e.currentTarget.style.borderColor='var(--border)')}
-              style={{display:'flex',alignItems:'center',gap:8,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:'5px 14px',width:220,cursor:'pointer',height:34}}>
-              <span style={{fontSize:14,color:'var(--t3)'}}>⌕</span>
-              <span style={{fontSize:13,color:'var(--t3)',flex:1}}>Search companies, funds…</span>
-            </div>
-            <button onClick={()=>setTheme(t=>t==='dark'?'light':'dark')} style={{width:30,height:30,borderRadius:7,border:'1px solid var(--border)',background:'var(--bg2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,color:'var(--t2)'}}>
-              {theme==='dark'?'☀':'☾'}
-            </button>
-            <button onClick={()=>router.push('/auth')} style={{padding:'7px 20px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,fontWeight:500,color:'var(--t2)',background:'transparent',cursor:'pointer'}}>Log in</button>
-            <button onClick={()=>router.push('/auth?mode=signup')} style={{padding:'7px 20px',borderRadius:6,fontSize:13,fontWeight:600,background:'var(--ac)',color:'#fff',border:'none',cursor:'pointer'}}>Sign up →</button>
-          </div>
-        </nav>
 
-        {/* EXPORT BAR */}
-        {someSelected&&(
-          <div style={{display:'flex',alignItems:'center',gap:10,padding:'8px 20px',background:'rgba(92,210,162,.06)',borderBottom:'1px solid var(--ac-b)',flexShrink:0}}>
-            <span style={{fontSize:13,color:'var(--ac)',fontWeight:600}}>{selected.size} selected</span>
-            <span style={{fontSize:13,color:'var(--t3)'}}>—</span>
-            <button onClick={()=>exportToCSV(D.filter(co=>selected.has(co.n)))} style={{display:'flex',alignItems:'center',gap:6,padding:'5px 14px',borderRadius:6,fontSize:13,fontWeight:600,background:'var(--ac-bg)',color:'var(--ac)',border:'1px solid var(--ac-b)',cursor:'pointer'}}>
-              ↓ Export CSV
-            </button>
-            {selected.size>=2&&selected.size<=3&&(
-              <button onClick={()=>router.push('/compare?cos='+Array.from(selected).map(toSlug).join(','))} style={{display:'flex',alignItems:'center',gap:6,padding:'5px 14px',borderRadius:6,fontSize:13,fontWeight:600,background:'rgba(111,163,239,.08)',color:'#6FA3EF',border:'1px solid rgba(111,163,239,.2)',cursor:'pointer'}}>
-                ⚖ Compare {selected.size}
-              </button>
-            )}
-            <button onClick={()=>setSelected(new Set())} style={{padding:'5px 14px',borderRadius:6,fontSize:13,color:'var(--t3)',background:'transparent',border:'1px solid var(--border)',cursor:'pointer'}}>Clear</button>
+          <div style={{padding:'12px 12px 4px',marginTop:4}}>
+            <div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(200,212,232,.2)',padding:'0 6px',marginBottom:4}}>Analysis</div>
+            {[
+              {icon:'↑',label:'Funding Rounds',href:'/dashboard'},
+              {icon:'◷',label:'Recent Deals',href:'/dashboard',badge:'New'},
+              {icon:'⚡',label:'Portfolio Co.',href:'/dashboard'},
+            ].map(item=>(
+              <div key={item.label} className="nav-item"
+                onClick={()=>router.push(item.href)}
+                style={{display:'flex',alignItems:'center',gap:9,padding:'7px 8px',borderRadius:6,cursor:'pointer',color:'var(--t3)',transition:'all .12s',fontSize:13,borderLeft:'2px solid transparent',marginBottom:1}}>
+                <span style={{fontSize:13,width:16,textAlign:'center',flexShrink:0}}>{item.icon}</span>
+                <span style={{flex:1}}>{item.label}</span>
+                {item.badge&&<span style={{fontSize:9,background:'rgba(37,99,235,.15)',padding:'2px 6px',borderRadius:10,color:'var(--ac-text)'}}>{item.badge}</span>}
+              </div>
+            ))}
           </div>
-        )}
+
+          {/* Footer */}
+          <div style={{marginTop:'auto',padding:12,borderTop:'1px solid var(--border)'}}>
+            <div style={{display:'flex',alignItems:'center',gap:9,padding:'6px 8px',borderRadius:7,marginBottom:8}}>
+              <div style={{width:28,height:28,borderRadius:'50%',background:'var(--ac-bg)',border:'1px solid var(--ac-b)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'var(--ac-text)'}}>VF</div>
+              <div>
+                <div style={{fontSize:12,fontWeight:500,color:'var(--text)'}}>vlafen</div>
+                <div style={{fontSize:10,color:'var(--t3)'}}>Free plan</div>
+              </div>
+            </div>
+            <button onClick={()=>router.push('/auth?mode=signup')} style={{width:'100%',padding:8,borderRadius:6,background:'var(--ac)',color:'#fff',border:'none',fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>Upgrade to Pro →</button>
+          </div>
+        </aside>
 
         {/* MAIN */}
-        <div style={{display:'grid',gridTemplateColumns:'180px 1fr',flex:1,overflow:'hidden'}}>
+        <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0,overflow:'hidden'}}>
 
-          {/* LEFT SIDEBAR */}
-          <div style={{borderRight:'1px solid var(--border)',background:'var(--bg)',overflowY:'auto'}}>
-            <div style={{fontSize:12,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)',padding:'14px 14px 6px'}}>Sectors</div>
-            {SECTS.map(s=>(
-              <div key={s.sl} className={`sb-r${sec===s.sl?' on':''}`} onClick={()=>setSec(s.sl)}
-                style={{display:'flex',alignItems:'center',gap:8,padding:'7px 14px',cursor:'pointer',transition:'background .12s'}}>
-                <div style={{width:6,height:6,borderRadius:'50%',background:s.c,flexShrink:0}}/>
-                <div className="sb-n" style={{fontSize:14,fontWeight:500,flex:1,color:'var(--t2)'}}>{s.n}</div>
-                <div style={{fontSize:13,color:'var(--t3)',fontFamily:"'DM Mono',monospace"}}>{s.cnt}</div>
-              </div>
-            ))}
-            <div style={{height:1,background:'var(--border)',margin:'6px 14px'}}/>
-            <div style={{fontSize:12,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)',padding:'8px 14px 6px'}}>Stage</div>
-            {[['Seed','2'],['Series A','9'],['Series B','7'],['Series C','2']].map(([s,c])=>(
-              <div key={s} className="sb-r" style={{display:'flex',alignItems:'center',gap:8,padding:'7px 14px',cursor:'pointer'}}>
-                <div style={{width:6,height:6,borderRadius:'50%',background:'var(--t3)',flexShrink:0}}/>
-                <div style={{fontSize:14,fontWeight:500,flex:1,color:'var(--t2)'}}>{s}</div>
-                <div style={{fontSize:13,color:'var(--t3)',fontFamily:"'DM Mono',monospace"}}>{c}</div>
-              </div>
-            ))}
-            <div style={{height:1,background:'var(--border)',margin:'6px 14px'}}/>
-            {/* Watchlist shortcut */}
-            <div className="sb-r" onClick={()=>router.push('/watchlist')} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 14px',cursor:'pointer'}}>
-              <div style={{width:6,height:6,borderRadius:'50%',background:'var(--ac)',flexShrink:0}}/>
-              <div style={{fontSize:14,fontWeight:500,flex:1,color:'var(--t2)'}}>Watchlist</div>
-              {wl.size>0&&<div style={{fontSize:13,color:'var(--ac)',fontFamily:"'DM Mono',monospace"}}>{wl.size}</div>}
+          {/* TOP BAR */}
+          <div style={{height:48,display:'flex',alignItems:'center',padding:'0 20px',background:'var(--bg2)',borderBottom:'1px solid var(--border)',flexShrink:0}}>
+            <div style={{fontSize:14,fontWeight:600,color:'var(--text)'}}>AI-Native Services Dashboard</div>
+            <div style={{display:'flex',alignItems:'center',gap:8,marginLeft:'auto'}}>
+              {someSelected&&<button onClick={()=>exportToCSV(data.filter(c=>selected.has(c.n)))} style={{padding:'6px 14px',borderRadius:6,border:'1px solid var(--ac-b)',background:'var(--ac-bg)',color:'var(--ac-text)',fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>↓ Export {selected.size}</button>}
+              <button style={{padding:'6px 14px',border:'1px solid var(--border)',borderRadius:6,background:'transparent',color:'var(--t3)',fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>Request Update</button>
+              <button style={{padding:'6px 14px',border:'none',borderRadius:6,background:'var(--ac)',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>+ Add Company</button>
             </div>
           </div>
 
-          {/* CENTER */}
-          <div style={{display:'flex',flexDirection:'column',overflow:'hidden'}}>
-            <div style={{display:'flex',alignItems:'center',gap:6,padding:'9px 14px',borderBottom:'1px solid var(--border)',background:'var(--bg)',flexShrink:0}}>
-              <div style={{position:'relative',flex:1,maxWidth:200}}>
-                <span style={{position:'absolute',left:8,top:'50%',transform:'translateY(-50%)',fontSize:15,color:'var(--t3)',pointerEvents:'none'}}>⌕</span>
-                <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search…" style={{width:'100%',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:6,padding:'6px 10px 6px 28px',fontSize:14,color:'var(--text)',fontFamily:"'Plus Jakarta Sans',sans-serif"}}/>
-              </div>
-              <select value={srt} onChange={e=>setSrt(e.target.value)} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:6,padding:'5px 8px',fontSize:13,fontWeight:500,color:'var(--t2)',cursor:'pointer',fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
-                <option value="r">↓ Raised</option>
-                <option value="v">↓ Valuation</option>
-                <option value="e">↓ Employees</option>
-                <option value="y">↓ Founded</option>
-                <option value="n">A→Z</option>
-              </select>
-              <div onClick={()=>setSec('')} style={{padding:'4px 10px',borderRadius:20,fontSize:13,fontWeight:600,border:'1px solid var(--border)',color:!sec?'var(--ac)':'var(--t3)',cursor:'pointer',background:!sec?'var(--ac-bg)':'transparent',transition:'all .15s'}}>All</div>
-              <div style={{display:'flex',border:'1px solid var(--border)',borderRadius:6,overflow:'hidden',marginLeft:'auto'}}>
-                {(['t','g'] as const).map(v=>(
-                  <button key={v} onClick={()=>setView(v)} style={{padding:'5px 10px',fontSize:14,cursor:'pointer',color:view===v?'var(--ac)':'var(--t3)',background:view===v?'var(--ac-bg)':'var(--bg2)',border:'none'}}>
-                    {v==='t'?'☰':'⊞'}
-                  </button>
+          <div style={{flex:1,padding:'18px 20px',overflow:'auto'}}>
+
+            {/* STATS */}
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:18}}>
+              {[
+                {l:'Companies',v:'20+',s:'tracked & verified'},
+                {l:'Total Raised',v:'$1.4B',s:'across all rounds'},
+                {l:'Sectors',v:'8',s:'service verticals'},
+                {l:'Top Investors',v:'27',s:'funds mapped'},
+              ].map(({l,v,s})=>(
+                <div key={l} style={{padding:'14px 16px',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,position:'relative',overflow:'hidden'}}>
+                  <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,var(--ac),transparent)`}}/>
+                  <div style={{fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)',marginBottom:6}}>{l}</div>
+                  <div style={{fontSize:22,fontWeight:600,color:'var(--ac-text)',fontFamily:"'DM Mono',monospace",letterSpacing:'-.02em'}}>{v}</div>
+                  <div style={{fontSize:10,color:'var(--t3)',marginTop:2}}>{s}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* FILTER BAR */}
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14,flexWrap:'wrap'}}>
+              <div style={{display:'flex',alignItems:'center',gap:6,flex:1,flexWrap:'wrap'}}>
+                <span style={{fontSize:9,color:'var(--t3)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginRight:2}}>Sector</span>
+                {SECTS.map(s=>(
+                  <div key={s.n} className={`pill${sec===s.sl?' active':''}`}
+                    onClick={()=>setSec(sec===s.sl?'':s.sl)}
+                    style={{padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:500,border:'1px solid var(--border)',background:'transparent',color:'var(--t3)',cursor:'pointer',transition:'all .12s',whiteSpace:'nowrap',display:'flex',alignItems:'center',gap:5}}>
+                    {s.n!=='All'&&<span style={{display:'inline-block',width:5,height:5,borderRadius:'50%',background:s.c,flexShrink:0}}/>}
+                    {s.n}
+                  </div>
+                ))}
+                <div style={{width:1,height:20,background:'var(--border)',margin:'0 4px',flexShrink:0}}/>
+                <span style={{fontSize:9,color:'var(--t3)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginRight:2}}>Stage</span>
+                {STAGES.map(st=>(
+                  <div key={st} className={`stage-pill${stage===st?' active':''}`}
+                    onClick={()=>setStage(stage===st?'':st)}
+                    style={{padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:500,border:'1px solid var(--border)',background:'transparent',color:'var(--t3)',cursor:'pointer',transition:'all .12s',whiteSpace:'nowrap'}}>
+                    {st}
+                  </div>
                 ))}
               </div>
-              <div style={{fontSize:13,color:'var(--t3)',fontFamily:"'DM Mono',monospace",whiteSpace:'nowrap'}}>{data.length}</div>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginLeft:'auto'}}>
+                <div style={{position:'relative'}}>
+                  <span style={{position:'absolute',left:8,top:'50%',transform:'translateY(-50%)',fontSize:13,color:'var(--t3)',pointerEvents:'none'}}>⌕</span>
+                  <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search…" style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:7,padding:'6px 10px 6px 26px',fontSize:12,color:'var(--text)',fontFamily:"'DM Sans',sans-serif",width:160}}/>
+                </div>
+                <select value={srt} onChange={e=>setSrt(e.target.value)} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:7,padding:'6px 8px',fontSize:12,fontWeight:500,color:'var(--t2)',cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>
+                  <option value="r">↓ Raised</option>
+                  <option value="v">↓ Valuation</option>
+                  <option value="e">↓ Employees</option>
+                  <option value="n">A→Z</option>
+                </select>
+                <div style={{display:'flex',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:7,overflow:'hidden'}}>
+                  {(['t','g'] as const).map(v=>(
+                    <button key={v} className={`view-btn${view===v?' active':''}`} onClick={()=>setView(v)} style={{padding:'6px 10px',fontSize:13,cursor:'pointer',color:view===v?'var(--ac-text)':'var(--t3)',background:view===v?'var(--ac-bg)':'transparent',border:'none',transition:'all .12s'}}>
+                      {v==='t'?'☰':'⊞'}
+                    </button>
+                  ))}
+                </div>
+                <span style={{fontSize:12,color:'var(--t3)',fontFamily:"'DM Mono',monospace"}}>{data.length}</span>
+              </div>
             </div>
 
             {/* TABLE */}
             {view==='t'&&(
-              <div style={{flex:1,overflow:'auto'}}>
+              <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,overflow:'hidden'}}>
                 <table style={{width:'100%',borderCollapse:'collapse'}}>
-                  <thead style={{position:'sticky',top:0,zIndex:5,background:'var(--bg2)'}}>
+                  <thead style={{position:'sticky',top:0,zIndex:5,background:'var(--bg3)'}}>
                     <tr style={{borderBottom:'1px solid var(--border)'}}>
-                      <th style={{padding:'8px 12px',width:36}}><input type="checkbox" checked={allSelected} onChange={toggleAll}/></th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)',width:28}}>#</th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>Company</th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>Sector</th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>Investors</th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--ac)'}}>Raised ↓</th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>Valuation</th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>Emp.</th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>Round</th>
-                      <th style={{padding:'8px 12px',textAlign:'left',fontSize:12,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>Date</th>
-                      <th style={{padding:'8px 12px',width:40}}></th>
+                      <th style={{padding:'9px 12px',width:36}}><input type="checkbox" checked={allSelected} onChange={toggleAll}/></th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)',width:28}}>#</th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>Company</th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>Sector</th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>Investors</th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--ac-text)'}}>Raised ↓</th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>Valuation</th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>Emp.</th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>Round</th>
+                      <th style={{padding:'9px 12px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>Date</th>
+                      <th style={{padding:'9px 12px',width:40}}/>
                     </tr>
                   </thead>
                   <tbody>
@@ -297,45 +359,44 @@ export default function DashboardPage(){
                       const isSel=selected.has(co.n)
                       const isWL=wl.has(co.n)
                       const coUrl='/company/'+toSlug(co.n)
+                      const rc=roundColor(co.st)
                       return(
-                        <tr key={co.n} onClick={()=>router.push(coUrl)} style={{borderBottom:'1px solid var(--border)',cursor:'pointer',transition:'background .1s',background:isSel?'rgba(92,210,162,.04)':'transparent'}}>
-                          <td style={{padding:'10px 12px',width:36}} onClick={e=>e.stopPropagation()}>
-                            <input type="checkbox" checked={isSel} onChange={()=>toggleSelect(co.n)}/>
-                          </td>
-                          <td style={{padding:'10px 12px',fontSize:14,color:'var(--t3)',fontFamily:"'DM Mono',monospace"}}>{i+1}</td>
+                        <tr key={co.n} onClick={()=>router.push(coUrl)} style={{borderBottom:'1px solid var(--border)',cursor:'pointer',transition:'background .1s',background:isSel?'rgba(37,99,235,.05)':'transparent'}}>
+                          <td style={{padding:'10px 12px',width:36}} onClick={e=>e.stopPropagation()}><input type="checkbox" checked={isSel} onChange={()=>toggleSelect(co.n)}/></td>
+                          <td style={{padding:'10px 12px',fontSize:13,color:'var(--t3)',fontFamily:"'DM Mono',monospace"}}>{i+1}</td>
                           <td style={{padding:'10px 12px'}}>
                             <div style={{display:'flex',alignItems:'center',gap:8}}>
-                              <div style={{width:26,height:26,borderRadius:6,background:'var(--bg3)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'var(--t3)',flexShrink:0}}>{ini(co.n)}</div>
+                              <div style={{width:28,height:28,borderRadius:7,background:co.sc,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}}>{ini(co.n)}</div>
                               <div>
-                                <a href={coUrl} target="_blank" rel="noreferrer" onClick={e=>e.preventDefault()} style={{fontSize:14,fontWeight:600,color:'var(--text)',textDecoration:'none',display:'block'}}>
-                                  {co.n}{co.pf&&<span style={{display:'inline-flex',padding:'2px 5px',borderRadius:4,fontSize:11,fontWeight:600,border:'1px solid',marginLeft:3,verticalAlign:'middle',background:'var(--ac-bg)',color:'var(--ac)',borderColor:'var(--ac-b)'}}>★</span>}
-                                </a>
-                                <div style={{fontSize:12,color:'var(--t3)',marginTop:1}}>{co.s}</div>
+                                <div style={{fontSize:13,fontWeight:500,color:'var(--text)'}}>
+                                  {co.n}{co.pf&&<span style={{display:'inline-flex',padding:'1px 5px',borderRadius:4,fontSize:9,fontWeight:700,border:'1px solid var(--ac-b)',marginLeft:4,verticalAlign:'middle',background:'var(--ac-bg)',color:'var(--ac-text)'}}>★</span>}
+                                </div>
+                                <div style={{fontSize:11,color:'var(--t3)',marginTop:1}}>{co.s}</div>
                               </div>
                             </div>
                           </td>
-                          <td style={{padding:'10px 12px',fontSize:14,color:'var(--t2)'}}>
-                            <span style={{display:'inline-block',width:5,height:5,borderRadius:'50%',background:co.sc,marginRight:4,verticalAlign:'middle'}}/>
+                          <td style={{padding:'10px 12px',fontSize:12,color:'var(--t2)'}}>
+                            <span style={{display:'inline-block',width:5,height:5,borderRadius:'50%',background:co.sc,marginRight:5,verticalAlign:'middle'}}/>
                             {co.sec}
                           </td>
                           <td style={{padding:'10px 12px'}} onClick={e=>e.stopPropagation()}>
                             <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
                               {co.inv.slice(0,2).map((inv:string)=>(
                                 <a key={inv} href={'/fund/'+toSlug(inv)} target="_blank" rel="noreferrer" className="ich" onClick={e=>e.stopPropagation()}
-                                  style={{padding:'2px 7px',borderRadius:5,fontSize:12,fontWeight:500,background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--t2)',whiteSpace:'nowrap',cursor:'pointer',transition:'all .12s',textDecoration:'none'}}>{inv}</a>
+                                  style={{padding:'2px 7px',borderRadius:4,fontSize:11,fontWeight:500,background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--t2)',whiteSpace:'nowrap',cursor:'pointer',transition:'all .12s',textDecoration:'none'}}>{inv}</a>
                               ))}
-                              {co.inv.length>2&&<span style={{padding:'2px 7px',borderRadius:5,fontSize:12,background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--t3)'}}>+{co.inv.length-2}</span>}
+                              {co.inv.length>2&&<span style={{padding:'2px 7px',borderRadius:4,fontSize:11,background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--t3)'}}>+{co.inv.length-2}</span>}
                             </div>
                           </td>
-                          <td style={{padding:'10px 12px',fontSize:14,fontFamily:"'DM Mono',monospace",color:'var(--ac)',fontWeight:500}}>{fmt(co.r)}</td>
-                          <td style={{padding:'10px 12px',fontSize:14,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{fmt(co.v)}</td>
-                          <td style={{padding:'10px 12px',fontSize:14,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{co.e}</td>
+                          <td style={{padding:'10px 12px',fontSize:13,fontFamily:"'DM Mono',monospace",color:'var(--ac-text)',fontWeight:600}}>{fmt(co.r)}</td>
+                          <td style={{padding:'10px 12px',fontSize:13,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{fmt(co.v)}</td>
+                          <td style={{padding:'10px 12px',fontSize:13,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{co.e}</td>
                           <td style={{padding:'10px 12px'}}>
-                            <span style={{padding:'2px 7px',borderRadius:4,fontSize:11,fontWeight:600,background:'rgba(111,163,239,.08)',color:'#6FA3EF',border:'1px solid rgba(111,163,239,.2)',whiteSpace:'nowrap'}}>{co.st}</span>
+                            <span style={{padding:'3px 8px',borderRadius:5,fontSize:10,fontWeight:600,background:rc.bg,color:rc.c,border:`1px solid ${rc.b}`,whiteSpace:'nowrap'}}>{co.st}</span>
                           </td>
-                          <td style={{padding:'10px 12px',fontSize:13,fontFamily:"'DM Mono',monospace",color:'var(--t3)',whiteSpace:'nowrap'}}>{co.date}</td>
+                          <td style={{padding:'10px 12px',fontSize:12,fontFamily:"'DM Mono',monospace",color:'var(--t3)',whiteSpace:'nowrap'}}>{co.date}</td>
                           <td style={{padding:'10px 12px',width:40}} onClick={e=>toggleWL(co.n,e)}>
-                            <button className="wl-star" style={{width:28,height:28,borderRadius:6,border:`1px solid ${isWL?'rgba(92,210,162,.3)':'var(--border)'}`,background:isWL?'rgba(92,210,162,.08)':'transparent',fontSize:14,color:isWL?'#5CD2A2':'var(--t3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .15s'}}>
+                            <button className="wl-star" style={{width:28,height:28,borderRadius:6,border:`1px solid ${isWL?'var(--ac-b)':'var(--border)'}`,background:isWL?'var(--ac-bg)':'transparent',fontSize:14,color:isWL?'var(--ac-text)':'var(--t3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .15s'}}>
                               {isWL?'★':'☆'}
                             </button>
                           </td>
@@ -349,96 +410,92 @@ export default function DashboardPage(){
 
             {/* GRID */}
             {view==='g'&&(
-              <div style={{flex:1,overflowY:'auto',padding:12}}>
-                <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))',gap:8}}>
-                  {data.map(co=>{
-                    const isSel=selected.has(co.n)
-                    const isWL=wl.has(co.n)
-                    return(
-                      <div key={co.n} className="gc" style={{background:isSel?'rgba(92,210,162,.06)':'var(--bg2)',border:`1px solid ${isSel?'var(--ac-b)':'var(--border)'}`,borderRadius:10,padding:13,cursor:'pointer',transition:'all .15s',position:'relative'}}>
-                        <div style={{position:'absolute',top:10,right:10,display:'flex',gap:4}}>
-                          <button className="wl-star" onClick={e=>toggleWL(co.n,e)} style={{width:24,height:24,borderRadius:5,border:`1px solid ${isWL?'rgba(92,210,162,.3)':'var(--border)'}`,background:isWL?'rgba(92,210,162,.08)':'transparent',fontSize:12,color:isWL?'#5CD2A2':'var(--t3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .15s'}}>
-                            {isWL?'★':'☆'}
-                          </button>
-                          <div onClick={e=>{e.stopPropagation();toggleSelect(co.n)}} style={{width:24,height:24,borderRadius:5,border:'1px solid var(--border)',background:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}>
-                            <input type="checkbox" checked={isSel} onChange={()=>toggleSelect(co.n)} style={{width:12,height:12}}/>
-                          </div>
-                        </div>
-                        <div onClick={()=>router.push('/company/'+toSlug(co.n))}>
-                          <div style={{display:'flex',alignItems:'flex-start',gap:8,marginBottom:9}}>
-                            <div style={{width:26,height:26,borderRadius:6,background:'var(--bg3)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color:'var(--t3)',flexShrink:0}}>{ini(co.n)}</div>
-                            <div style={{flex:1,minWidth:0,paddingRight:52}}>
-                              <div style={{fontSize:14,fontWeight:600,color:'var(--text)'}}>{co.n}{co.pf&&<span style={{display:'inline-flex',padding:'2px 5px',borderRadius:4,fontSize:9,fontWeight:600,border:'1px solid',marginLeft:3,background:'var(--ac-bg)',color:'var(--ac)',borderColor:'var(--ac-b)'}}>★</span>}</div>
-                              <div style={{fontSize:12,color:'var(--t3)',marginTop:1}}>{co.s}</div>
-                              <span style={{display:'inline-flex',padding:'2px 5px',borderRadius:4,fontSize:11,fontWeight:600,border:'1px solid',marginTop:3,background:'rgba(111,163,239,.08)',color:'#6FA3EF',borderColor:'rgba(111,163,239,.2)'}}>{co.st}</span>
-                            </div>
-                          </div>
-                          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4}}>
-                            {[['Raised',fmt(co.r),true],['Val.',fmt(co.v),false],['Emp.',String(co.e),false]].map(([l,v,g])=>(
-                              <div key={String(l)} style={{background:'var(--bg3)',borderRadius:5,padding:'6px 8px'}}>
-                                <div style={{fontFamily:"'DM Mono',monospace",fontSize:14,fontWeight:500,color:g?'var(--ac)':'var(--text)'}}>{v}</div>
-                                <div style={{fontSize:11,textTransform:'uppercase',letterSpacing:'.05em',color:'var(--t3)',marginTop:1}}>{l}</div>
-                              </div>
-                            ))}
-                          </div>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))',gap:8}}>
+                {data.map(co=>{
+                  const isSel=selected.has(co.n)
+                  const isWL=wl.has(co.n)
+                  const rc=roundColor(co.st)
+                  return(
+                    <div key={co.n} style={{background:isSel?'rgba(37,99,235,.06)':'var(--bg2)',border:`1px solid ${isSel?'var(--ac-b)':'var(--border)'}`,borderRadius:10,padding:13,cursor:'pointer',transition:'all .15s',position:'relative'}} onClick={()=>router.push('/company/'+toSlug(co.n))}>
+                      <div style={{position:'absolute',top:10,right:10}}>
+                        <button className="wl-star" onClick={e=>toggleWL(co.n,e)} style={{width:24,height:24,borderRadius:5,border:`1px solid ${isWL?'var(--ac-b)':'var(--border)'}`,background:isWL?'var(--ac-bg)':'transparent',fontSize:12,color:isWL?'var(--ac-text)':'var(--t3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                          {isWL?'★':'☆'}
+                        </button>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                        <div style={{width:28,height:28,borderRadius:7,background:co.sc,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}}>{ini(co.n)}</div>
+                        <div style={{flex:1,minWidth:0,paddingRight:28}}>
+                          <div style={{fontSize:13,fontWeight:500,color:'var(--text)'}}>{co.n}{co.pf&&<span style={{display:'inline-flex',padding:'1px 5px',borderRadius:4,fontSize:9,fontWeight:700,border:'1px solid var(--ac-b)',marginLeft:4,background:'var(--ac-bg)',color:'var(--ac-text)'}}>★</span>}</div>
+                          <div style={{fontSize:11,color:'var(--t3)',marginTop:1}}>{co.s}</div>
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
+                      <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:4}}>
+                        {[['Raised',fmt(co.r),true],['Val.',fmt(co.v),false],['Emp.',String(co.e),false]].map(([l,v,g])=>(
+                          <div key={String(l)} style={{background:'var(--bg3)',borderRadius:5,padding:'6px 8px'}}>
+                            <div style={{fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:500,color:g?'var(--ac-text)':'var(--text)'}}>{v}</div>
+                            <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'.05em',color:'var(--t3)',marginTop:1}}>{l}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{marginTop:8}}>
+                        <span style={{padding:'3px 8px',borderRadius:5,fontSize:10,fontWeight:600,background:rc.bg,color:rc.c,border:`1px solid ${rc.b}`}}>{co.st}</span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
         </div>
+      </div>
 
-        {/* CMD+K */}
-        {cmdOpen&&(
-          <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(6px)',display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:'15vh'}} onClick={closeCmd}>
-            <div style={{width:560,background:'var(--bg)',border:'1px solid var(--border2)',borderRadius:14,overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,0.15)'}} onClick={e=>e.stopPropagation()}>
-              <div style={{display:'flex',alignItems:'center',gap:10,padding:'14px 16px',borderBottom:'1px solid var(--border)'}}>
-                <span style={{fontSize:16,color:'var(--t3)'}}>⌕</span>
-                <input ref={cmdRef} value={cmdQ} onChange={e=>{setCmdQ(e.target.value);setCmdSel(0)}}
-                  onKeyDown={e=>{
-                    if(e.key==='Escape') closeCmd()
-                    else if(e.key==='ArrowDown') setCmdSel(s=>Math.min(s+1,cmdResults.length-1))
-                    else if(e.key==='ArrowUp') setCmdSel(s=>Math.max(s-1,0))
-                    else if(e.key==='Enter') selectCmd(cmdSel)
-                  }}
-                  placeholder="Search companies, funds, sectors…"
-                  style={{flex:1,background:'transparent',border:'none',outline:'none',fontSize:15,color:'#fff',fontFamily:"'Plus Jakarta Sans',sans-serif"}}
-                />
-                <kbd style={{fontSize:10,color:'var(--t3)',background:'var(--bg2)',padding:'2px 6px',borderRadius:4,border:'1px solid var(--border)'}}>ESC</kbd>
-              </div>
-              <div style={{maxHeight:380,overflowY:'auto'}}>
-                {!cmdQ&&<div style={{padding:'10px 16px 4px',fontSize:10,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)'}}>Recent</div>}
-                {cmdResults.length===0
-                  ?<div style={{padding:'24px 16px',textAlign:'center',color:'var(--t3)',fontSize:13}}>No results</div>
-                  :cmdResults.map((r:any,i:number)=>(
-                    <div key={r.name+i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 16px',background:i===cmdSel?'var(--ac-bg)':'transparent',borderLeft:i===cmdSel?`2px solid var(--ac)`:'2px solid transparent',cursor:'pointer'}}
-                      onMouseEnter={()=>setCmdSel(i)} onClick={()=>selectCmd(i)}>
-                      {r.type==='company'
-                        ?<div style={{width:32,height:32,borderRadius:8,background:r.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}}>{ini(r.name)}</div>
-                        :<div style={{width:32,height:32,borderRadius:8,background:'var(--bg3)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0}}>🏦</div>
-                      }
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:13,fontWeight:600,color:'var(--text)',marginBottom:2}}>{r.name}</div>
-                        <div style={{fontSize:11,color:'var(--t3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.sub}</div>
-                      </div>
-                      {r.raised
-                        ?<div style={{fontFamily:'DM Mono,monospace',fontSize:12,fontWeight:500,color:'var(--ac)',flexShrink:0}}>{r.raised}</div>
-                        :<div style={{fontSize:10,color:'var(--t3)',background:'var(--bg2)',padding:'2px 7px',borderRadius:4,flexShrink:0}}>Fund</div>
-                      }
+      {/* CMD+K */}
+      {cmdOpen&&(
+        <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.65)',backdropFilter:'blur(6px)',display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:'15vh'}} onClick={closeCmd}>
+          <div style={{width:560,background:'var(--bg2)',border:'1px solid var(--border2)',borderRadius:14,overflow:'hidden',boxShadow:'0 24px 80px rgba(0,0,0,0.5)'}} onClick={e=>e.stopPropagation()}>
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'14px 16px',borderBottom:'1px solid var(--border)'}}>
+              <span style={{fontSize:16,color:'var(--t3)'}}>⌕</span>
+              <input ref={cmdRef} value={cmdQ} onChange={e=>{setCmdQ(e.target.value);setCmdSel(0)}}
+                onKeyDown={e=>{
+                  if(e.key==='Escape') closeCmd()
+                  else if(e.key==='ArrowDown') setCmdSel(s=>Math.min(s+1,cmdResults.length-1))
+                  else if(e.key==='ArrowUp') setCmdSel(s=>Math.max(s-1,0))
+                  else if(e.key==='Enter') selectCmd(cmdSel)
+                }}
+                placeholder="Search companies, funds, sectors…"
+                style={{flex:1,background:'transparent',border:'none',outline:'none',fontSize:15,color:'var(--text)',fontFamily:"'DM Sans',sans-serif"}}
+              />
+              <kbd style={{fontSize:10,color:'var(--t3)',background:'var(--bg3)',padding:'2px 6px',borderRadius:4,border:'1px solid var(--border)'}}>ESC</kbd>
+            </div>
+            <div style={{maxHeight:380,overflowY:'auto'}}>
+              {!cmdQ&&<div style={{padding:'10px 16px 4px',fontSize:10,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)'}}>Recent</div>}
+              {cmdResults.length===0
+                ?<div style={{padding:'24px 16px',textAlign:'center',color:'var(--t3)',fontSize:13}}>No results</div>
+                :cmdResults.map((r:any,i:number)=>(
+                  <div key={r.name+i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 16px',background:i===cmdSel?'var(--ac-bg)':'transparent',borderLeft:i===cmdSel?'2px solid var(--ac)':'2px solid transparent',cursor:'pointer'}}
+                    onMouseEnter={()=>setCmdSel(i)} onClick={()=>selectCmd(i)}>
+                    {r.type==='company'
+                      ?<div style={{width:32,height:32,borderRadius:8,background:r.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}}>{ini(r.name)}</div>
+                      :<div style={{width:32,height:32,borderRadius:8,background:'var(--bg3)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0}}>🏦</div>
+                    }
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:13,fontWeight:500,color:'var(--text)',marginBottom:2}}>{r.name}</div>
+                      <div style={{fontSize:11,color:'var(--t3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.sub}</div>
                     </div>
-                  ))
-                }
-              </div>
-              <div style={{padding:'8px 16px',borderTop:'1px solid var(--border)',display:'flex',gap:12,fontSize:10,color:'var(--t3)'}}>
-                <span>↑↓ navigate</span><span>↵ select</span><span>ESC close</span>
-              </div>
+                    {r.raised
+                      ?<div style={{fontFamily:"'DM Mono',monospace",fontSize:12,fontWeight:500,color:'var(--ac-text)',flexShrink:0}}>{r.raised}</div>
+                      :<div style={{fontSize:10,color:'var(--t3)',background:'var(--bg3)',padding:'2px 7px',borderRadius:4,flexShrink:0}}>Fund</div>
+                    }
+                  </div>
+                ))
+              }
+            </div>
+            <div style={{padding:'8px 16px',borderTop:'1px solid var(--border)',display:'flex',gap:12,fontSize:10,color:'var(--t3)'}}>
+              <span>↑↓ navigate</span><span>↵ select</span><span>ESC close</span>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </>
   )
 }
