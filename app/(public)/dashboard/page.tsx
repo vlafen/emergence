@@ -163,6 +163,7 @@ export default function DashboardPage(){
         .gc:hover{border-color:var(--border2)!important}
         input[type=checkbox]{accent-color:var(--ac);width:14px;height:14px;cursor:pointer}
         input::placeholder{color:var(--t3)}button:focus,select:focus{outline:none}
+        .dd-item:hover{background:var(--bg3)!important}
         .fscroll{scrollbar-width:none;-ms-overflow-style:none}.fscroll::-webkit-scrollbar{display:none}
         ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}::-webkit-scrollbar-track{background:transparent}
       `}</style>
@@ -293,7 +294,7 @@ export default function DashboardPage(){
                     <div style={{position:'fixed',inset:0,zIndex:90}} onClick={()=>setSecOpen(false)}/>
                     <div style={{position:'absolute',top:36,left:0,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:9,boxShadow:'0 6px 24px rgba(0,0,0,.15)',padding:6,zIndex:200,minWidth:160}}>
                       {SECTS.map(s=>(
-                        <div key={s.n} onClick={()=>{setSec(s.sl);setSecOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:sec===s.sl?'var(--ac-t)':'var(--t2)',background:sec===s.sl?'var(--ac-bg)':'transparent',transition:'background .1s'}} onMouseOver={e=>{if(sec!==s.sl)(e.currentTarget as HTMLDivElement).style.background='var(--bg3)'}} onMouseOut={e=>{if(sec!==s.sl)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                        <div key={s.n} onClick={()=>{setSec(s.sl);setSecOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:sec===s.sl?'var(--ac-t)':'var(--t2)',background:sec===s.sl?'var(--ac-bg)':'transparent',transition:'background .1s'}} className="dd-item">
                           {s.n!=='All'&&<span style={{width:7,height:7,borderRadius:'50%',background:s.c,display:'inline-block',flexShrink:0}}/>}
                           {s.n==='All'&&<span style={{width:7,height:7,flexShrink:0}}/>}
                           <span style={{flex:1}}>{s.n}</span>
@@ -314,11 +315,11 @@ export default function DashboardPage(){
                   <>
                     <div style={{position:'fixed',inset:0,zIndex:90}} onClick={()=>setStgOpen(false)}/>
                     <div style={{position:'absolute',top:36,left:0,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:9,boxShadow:'0 6px 24px rgba(0,0,0,.15)',padding:6,zIndex:200,minWidth:130}}>
-                      <div onClick={()=>{setStage('');setStgOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:!stage?'var(--ac-t)':'var(--t2)',background:!stage?'var(--ac-bg)':'transparent'}} onMouseOver={e=>{if(stage)(e.currentTarget as HTMLDivElement).style.background='var(--bg3)'}} onMouseOut={e=>{if(stage)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                      <div onClick={()=>{setStage('');setStgOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:!stage?'var(--ac-t)':'var(--t2)',background:!stage?'var(--ac-bg)':'transparent'}} className="dd-item">
                         <span style={{flex:1}}>All stages</span>{!stage&&<span style={{fontSize:10}}>✓</span>}
                       </div>
                       {STAGES.map(st=>(
-                        <div key={st} onClick={()=>{setStage(st);setStgOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:stage===st?'var(--ac-t)':'var(--t2)',background:stage===st?'var(--ac-bg)':'transparent',transition:'background .1s'}} onMouseOver={e=>{if(stage!==st)(e.currentTarget as HTMLDivElement).style.background='var(--bg3)'}} onMouseOut={e=>{if(stage!==st)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                        <div key={st} onClick={()=>{setStage(st);setStgOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:stage===st?'var(--ac-t)':'var(--t2)',background:stage===st?'var(--ac-bg)':'transparent',transition:'background .1s'}} className="dd-item">
                           <span style={{flex:1}}>{st}</span>{stage===st&&<span style={{fontSize:10}}>✓</span>}
                         </div>
                       ))}
