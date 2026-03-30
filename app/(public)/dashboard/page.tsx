@@ -358,7 +358,7 @@ export default function DashboardPage(){
                     <tr style={{borderBottom:'1px solid var(--border)'}}>
                       <th style={{padding:'8px 10px',width:34}}><input type="checkbox" checked={allSel} onChange={toggleAll}/></th>
                       <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)',width:24}}>#</th>
-                      <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)',letterSpacing:'.1em'}}>Company</th>
+                      <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>Company</th>
                       <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)'}}>Sector</th>
                       <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)'}}>Investors</th>
                       <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--ac-t)'}}>Raised ↓</th>
