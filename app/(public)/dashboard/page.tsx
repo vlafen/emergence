@@ -147,8 +147,8 @@ export default function DashboardPage(){
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif}
-        html[data-theme=dark]{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#f0f4fa;--t2:#c8d4e8;--t3:rgba(200,212,232,.42);--ac:#2563EB;--ac-bg:rgba(37,99,235,.1);--ac-b:rgba(37,99,235,.26);--ac-t:#7aaff7;--sb:#0c0c14;--top:#0e0e18}
-        html[data-theme=light]{--bg:#f6f7f9;--bg2:#ffffff;--bg3:#f0f2f5;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);--text:#111111;--t2:#1a1a1a;--t3:rgba(0,0,0,.4);--ac:#2563EB;--ac-bg:rgba(37,99,235,.07);--ac-b:rgba(37,99,235,.2);--ac-t:#1d4ed8;--sb:#ffffff;--top:#ffffff}
+        html[data-theme=dark]{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);--text:#ffffff;--t2:#e8edf5;--t3:rgba(255,255,255,.45);--ac:#2563EB;--ac-bg:rgba(37,99,235,.1);--ac-b:rgba(37,99,235,.26);--ac-t:#7aaff7;--sb:#0c0c14;--top:#0e0e18}
+        html[data-theme=light]{--bg:#f4f5f7;--bg2:#ffffff;--bg3:#eef0f3;--border:rgba(0,0,0,.09);--border2:rgba(0,0,0,.18);--text:#111111;--t2:#1a1a1a;--t3:rgba(0,0,0,.45);--ac:#2563EB;--ac-bg:rgba(37,99,235,.08);--ac-b:rgba(37,99,235,.22);--ac-t:#1d4ed8;--sb:#ffffff;--top:#ffffff}
         .ni{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--t3);transition:all .12s;font-size:13px;border-left:2px solid transparent;margin-bottom:1px;white-space:nowrap;overflow:hidden}
         .ni:hover{background:rgba(37,99,235,.07);color:var(--t2)}
         .ni.on{background:var(--ac-bg);color:var(--ac-t);border-left-color:var(--ac);font-weight:500}
@@ -280,7 +280,7 @@ export default function DashboardPage(){
             <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:14}}>
               {[{l:'Companies',v:'20+',s:'tracked'},{l:'Total Raised',v:'$1.4B',s:'all rounds'},{l:'Sectors',v:'8',s:'verticals'},{l:'Investors',v:'27',s:'top funds'}].map(({l,v,s})=>(
                 <div key={l} style={{padding:'12px 14px',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,position:'relative',overflow:'hidden'}}>
-                  <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:'linear-gradient(90deg,var(--ac),transparent)'}}/>
+                  <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,var(--ac),transparent)`}}/>
                   <div style={{fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)',marginBottom:5}}>{l}</div>
                   <div style={{fontSize:20,fontWeight:600,color:'var(--ac-t)',fontFamily:"'DM Mono',monospace"}}>{v}</div>
                   <div style={{fontSize:10,color:'var(--t3)',marginTop:2}}>{s}</div>
@@ -365,7 +365,7 @@ export default function DashboardPage(){
                     <tr style={{borderBottom:'1px solid var(--border)'}}>
                       <th style={{padding:'8px 10px',width:34}}><input type="checkbox" checked={allSel} onChange={toggleAll}/></th>
                       <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)',width:24}}>#</th>
-                      <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)'}}>Company</th>
+                      <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)',letterSpacing:'.1em'}}>Company</th>
                       <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)'}}>Sector</th>
                       <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--t3)'}}>Investors</th>
                       <th style={{padding:'8px 8px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--ac-t)'}}>Raised ↓</th>
@@ -382,17 +382,17 @@ export default function DashboardPage(){
                       return(
                         <tr key={co.n} onClick={()=>router.push('/company/'+toSlug(co.n))} style={{borderBottom:'1px solid var(--border)',cursor:'pointer',background:isSel?'rgba(37,99,235,.05)':'transparent',transition:'background .1s'}}>
                           <td style={{padding:'9px 10px',width:34}} onClick={e=>e.stopPropagation()}><input type="checkbox" checked={isSel} onChange={()=>toggleSelect(co.n)}/></td>
-                          <td style={{padding:'9px 8px',fontSize:12,color:'var(--t3)',fontFamily:"'DM Mono',monospace"}}>{i+1}</td>
+                          <td style={{padding:'9px 8px',fontSize:12,color:'var(--t2)',fontFamily:"'DM Mono',monospace"}}>{i+1}</td>
                           <td style={{padding:'9px 8px'}}>
                             <div style={{display:'flex',alignItems:'center',gap:8}}>
                               <div style={{width:26,height:26,borderRadius:6,background:co.sc,display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,fontWeight:700,color:'#fff',flexShrink:0}}>{ini(co.n)}</div>
                               <div>
-                                <div style={{fontSize:12,fontWeight:500,color:'var(--text)'}}>{co.n}{co.pf&&<span style={{marginLeft:4,fontSize:9,padding:'1px 5px',borderRadius:4,background:'var(--ac-bg)',color:'var(--ac-t)',border:'1px solid var(--ac-b)'}}>★</span>}</div>
+                                <div style={{fontSize:12,fontWeight:500,color:'var(--text)',letterSpacing:'-.01em'}}>{co.n}{co.pf&&<span style={{marginLeft:4,fontSize:9,padding:'1px 5px',borderRadius:4,background:'var(--ac-bg)',color:'var(--ac-t)',border:'1px solid var(--ac-b)'}}>★</span>}</div>
                                 <div style={{fontSize:11,color:'var(--t3)',marginTop:1}}>{co.s}</div>
                               </div>
                             </div>
                           </td>
-                          <td style={{padding:'9px 8px',fontSize:12,color:'var(--t2)'}}><span style={{display:'inline-block',width:5,height:5,borderRadius:'50%',background:co.sc,marginRight:5,verticalAlign:'middle'}}/>{co.sec}</td>
+                          <td style={{padding:'9px 8px',fontSize:12,color:'var(--text)'}}><span style={{display:'inline-block',width:5,height:5,borderRadius:'50%',background:co.sc,marginRight:5,verticalAlign:'middle'}}/>{co.sec}</td>
                           <td style={{padding:'9px 8px'}} onClick={e=>e.stopPropagation()}>
                             <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
                               {co.inv.slice(0,2).map((inv:string)=>(
@@ -402,10 +402,10 @@ export default function DashboardPage(){
                             </div>
                           </td>
                           <td style={{padding:'9px 8px',fontSize:13,fontFamily:"'DM Mono',monospace",color:'var(--ac-t)',fontWeight:600}}>{fmt(co.r)}</td>
-                          <td style={{padding:'9px 8px',fontSize:12,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{fmt(co.v)}</td>
-                          <td style={{padding:'9px 8px',fontSize:12,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{co.e}</td>
+                          <td style={{padding:'9px 8px',fontSize:12,fontFamily:"'DM Mono',monospace",color:'var(--text)'}}>{fmt(co.v)}</td>
+                          <td style={{padding:'9px 8px',fontSize:12,fontFamily:"'DM Mono',monospace",color:'var(--text)'}}>{co.e}</td>
                           <td style={{padding:'9px 8px'}}><span style={{padding:'3px 8px',borderRadius:5,fontSize:10,fontWeight:600,background:rcc.bg,color:rcc.c,border:`1px solid ${rcc.b}`,whiteSpace:'nowrap'}}>{co.st}</span></td>
-                          <td style={{padding:'9px 8px',fontSize:11,fontFamily:"'DM Mono',monospace",color:'var(--t3)',whiteSpace:'nowrap'}}>{co.date}</td>
+                          <td style={{padding:'9px 8px',fontSize:11,fontFamily:"'DM Mono',monospace",color:'var(--t2)',whiteSpace:'nowrap'}}>{co.date}</td>
                           <td style={{padding:'9px 8px',width:36}} onClick={e=>toggleWL(co.n,e)}>
                             <button className="wls" style={{width:26,height:26,borderRadius:5,border:`1px solid ${isWL?'var(--ac-b)':'var(--border)'}`,background:isWL?'var(--ac-bg)':'transparent',fontSize:13,color:isWL?'var(--ac-t)':'var(--t3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',transition:'all .15s'}}>{isWL?'★':'☆'}</button>
                           </td>
