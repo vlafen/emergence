@@ -221,6 +221,8 @@ export default function DashboardPage(){
         input[type=checkbox]{accent-color:var(--ac);width:14px;height:14px;cursor:pointer}
         input::placeholder{color:var(--t3)}
         button:focus,select:focus{outline:none}
+        .filter-scroll{scrollbar-width:none;-ms-overflow-style:none}
+        .filter-scroll::-webkit-scrollbar{display:none}
         ::-webkit-scrollbar{width:4px;height:4px}
         ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
         ::-webkit-scrollbar-track{background:transparent}
@@ -231,7 +233,7 @@ export default function DashboardPage(){
       <div data-theme={theme} style={{height:'100vh',display:'flex',overflow:'hidden',background:'var(--bg)',color:'var(--text)'}}>
 
         {/* ── SIDEBAR ── */}
-        <aside onMouseEnter={()=>{if(!pinned)setHovered(true)}} onMouseLeave={()=>setHovered(false)} style={{width:pinned?sw:56,flexShrink:0,background:'var(--sb-bg)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden',position:hovered&&!pinned?'absolute':'relative',zIndex:50,transition:'width .2s ease',boxShadow:hovered&&!pinned?'4px 0 20px rgba(0,0,0,.2)':'none'}}>
+        <aside onMouseEnter={()=>{if(!pinned)setHovered(true)}} onMouseLeave={()=>setHovered(false)} style={{width:expanded?220:56,flexShrink:0,background:'var(--sb-bg)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden',position:pinned?'relative':'absolute',zIndex:60,transition:'width .18s ease',boxShadow:hovered&&!pinned?'6px 0 24px rgba(0,0,0,.18)':'none'}}>
 
           {/* Logo + collapse button */}
           <div style={{display:'flex',alignItems:'center',gap:8,padding:'12px 12px 10px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
@@ -248,22 +250,6 @@ export default function DashboardPage(){
               </button>
             )}
           </div>
-
-          {/* Search */}
-          {expanded&&(
-            <div style={{padding:'8px 10px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
-              <div onClick={openCmd} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 10px',background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:7,cursor:'pointer'}}>
-                <span style={{fontSize:13,color:'var(--t3)'}}>⌕</span>
-                <span style={{fontSize:12,color:'var(--t3)',flex:1}}>Search…</span>
-                <span style={{fontSize:9,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:3,padding:'1px 5px',color:'var(--t3)'}}>⌘K</span>
-              </div>
-            </div>
-          )}
-          {!expanded&&(
-            <div style={{padding:'8px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
-              <button onClick={openCmd} style={{width:36,height:32,borderRadius:7,border:'1px solid var(--border)',background:'var(--bg3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:'var(--t3)',margin:'0 auto'}}>⌕</button>
-            </div>
-          )}
 
           {/* Nav */}
           <div style={{padding:'10px 8px 4px',overflow:'hidden'}}>
@@ -306,7 +292,7 @@ export default function DashboardPage(){
         </aside>
 
         {/* ── MAIN ── */}
-        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',marginLeft:hovered&&!pinned?0:0}}>
+        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',marginLeft:pinned?0:56}}>
 
           {/* TOPBAR */}
           <div style={{height:48,display:'flex',alignItems:'center',padding:'0 12px',background:'var(--topbar-bg)',borderBottom:'1px solid var(--border)',flexShrink:0,gap:8}}>
@@ -367,20 +353,22 @@ export default function DashboardPage(){
             </div>
 
             {/* FILTER BAR */}
-            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12,flexWrap:'wrap'}}>
-              <div style={{display:'flex',alignItems:'center',gap:5,flex:1,flexWrap:'wrap'}}>
-                <span style={{fontSize:9,color:'var(--t3)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginRight:2}}>Sector</span>
-                {SECTS.map(s=>(
-                  <div key={s.n} className={`pill${sec===s.sl?' active':''}`} onClick={()=>setSec(sec===s.sl?'':s.sl)}>
-                    {s.n!=='All'&&<span style={{display:'inline-block',width:5,height:5,borderRadius:'50%',background:s.c,flexShrink:0}}/>}
-                    {s.n}
-                  </div>
-                ))}
-                <div style={{width:1,height:18,background:'var(--border)',margin:'0 4px',flexShrink:0}}/>
-                <span style={{fontSize:9,color:'var(--t3)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginRight:2}}>Stage</span>
-                {STAGES.map(st=>(
-                  <div key={st} className={`pill${stage===st?' active':''}`} onClick={()=>setStage(stage===st?'':st)}>{st}</div>
-                ))}
+            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+              <div style={{display:'flex',alignItems:'center',gap:5,flex:1,overflow:'hidden'}}>
+                <div style={{display:'flex',alignItems:'center',gap:5,overflowX:'auto',paddingBottom:2,flexShrink:0}} className="filter-scroll">
+                  <span style={{fontSize:9,color:'var(--t3)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginRight:2,flexShrink:0}}>Sector</span>
+                  {SECTS.map(s=>(
+                    <div key={s.n} className={`pill${sec===s.sl?' active':''}`} onClick={()=>setSec(sec===s.sl?'':s.sl)} style={{flexShrink:0}}>
+                      {s.n!=='All'&&<span style={{display:'inline-block',width:5,height:5,borderRadius:'50%',background:s.c,flexShrink:0}}/>}
+                      {s.n}
+                    </div>
+                  ))}
+                  <div style={{width:1,height:18,background:'var(--border)',margin:'0 4px',flexShrink:0}}/>
+                  <span style={{fontSize:9,color:'var(--t3)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginRight:2,flexShrink:0}}>Stage</span>
+                  {STAGES.map(st=>(
+                    <div key={st} className={`pill${stage===st?' active':''}`} onClick={()=>setStage(stage===st?'':st)} style={{flexShrink:0}}>{st}</div>
+                  ))}
+                </div>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:6,flexShrink:0}}>
                 <div style={{position:'relative'}}>
