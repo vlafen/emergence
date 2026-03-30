@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 
 const D=[
@@ -39,281 +39,167 @@ function fmt(n:number){if(!n)return'—';if(n>=1000)return`$${(n/1000).toFixed(1
 function ini(n:string){return n.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()}
 function toSlug(n:string){return n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 
+const CSS=`
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif}
+  html[data-theme=dark],html:not([data-theme]){--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.13);--text:#f0f4fa;--t2:#c8d4e8;--t3:rgba(200,212,232,.42);--ac:#2563EB;--ac-bg:rgba(37,99,235,.1);--ac-b:rgba(37,99,235,.25);--ac-t:#7aaff7}
+  html[data-theme=light]{--bg:#f4f2ed;--bg2:#ffffff;--bg3:#f0ede6;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);--text:#0d0d0d;--t2:#2a2a2a;--t3:rgba(10,10,10,.42);--ac:#2563EB;--ac-bg:rgba(37,99,235,.08);--ac-b:rgba(37,99,235,.22);--ac-t:#1d4ed8}
+  .nav-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--t3);transition:all .12s;font-size:13px;border-left:2px solid transparent;margin-bottom:1px}
+  .nav-item:hover{background:rgba(37,99,235,.06);color:var(--t2)}
+  .nav-item.active{background:var(--ac-bg);color:var(--ac-t);border-left-color:var(--ac);font-weight:500}
+  .card:hover{border-color:var(--border2)!important}
+  tbody tr:hover{background:rgba(37,99,235,.04)}
+  .tab-btn{padding:8px 16px;border:none;background:transparent;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--t3);border-bottom:2px solid transparent;transition:all .15s}
+  .tab-btn.active{color:var(--ac-t);border-bottom-color:var(--ac)}
+  .tab-btn:hover{color:var(--t2)}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+`
+
 export default function WatchlistPage(){
   const router=useRouter()
   const [cos,setCos]=useState<string[]>([])
-  const [funds,setFunds]=useState<string[]>([])
   const [tab,setTab]=useState<'companies'|'funds'>('companies')
-  const [theme,setTheme]=useState<'dark'|'light'>('light')
-  const [cmdOpen,setCmdOpen]=useState(false)
-  const [cmdQ,setCmdQ]=useState('')
-  const [cmdSel,setCmdSel]=useState(0)
-  const cmdRef=useRef<HTMLInputElement>(null)
-  const wlSize=cos.length+funds.length
-
+  const [theme,setTheme]=useState<'dark'|'light'>('dark')
 
   useEffect(()=>{
-    const saved=localStorage.getItem('theme') as 'dark'|'light'|null
-    if(saved) setTheme(saved)
+    const s=localStorage.getItem('theme') as 'dark'|'light'|null
+    const t=s||'dark';setTheme(t);document.documentElement.setAttribute('data-theme',t)
+    try{setCos(JSON.parse(localStorage.getItem('wl_companies')||'[]'))}catch{}
   },[])
 
-  useEffect(()=>{
-    document.documentElement.setAttribute('data-theme',theme)
-    localStorage.setItem('theme',theme)
-  },[theme])
-  useEffect(()=>{
-    try{
-      setCos(JSON.parse(localStorage.getItem('wl_companies')||'[]'))
-      setFunds(JSON.parse(localStorage.getItem('wl_funds')||'[]'))
-    }catch{}
-  },[])
+  function toggleTheme(){
+    const next=theme==='dark'?'light':'dark'
+    setTheme(next);document.documentElement.setAttribute('data-theme',next);localStorage.setItem('theme',next)
+  }
 
-  function removeCo(name:string){
+  function removeCompany(name:string){
     const next=cos.filter(n=>n!==name)
     setCos(next);localStorage.setItem('wl_companies',JSON.stringify(next))
   }
-  function removeFund(name:string){
-    const next=funds.filter(n=>n!==name)
-    setFunds(next);localStorage.setItem('wl_funds',JSON.stringify(next))
-  }
 
-  const companies=cos.map(n=>D.find(c=>c.n===n)).filter(Boolean) as typeof D
-  const savedFunds=funds.map(n=>FUNDS.find((f:any)=>f.n===n)).filter(Boolean) as any[]
-
-  const cmdResults=useMemo(()=>{
-    const all=[
-      ...D.map(co=>({type:'company',name:co.n,sub:co.s+' · '+co.sec,slug:toSlug(co.n),color:co.sc})),
-      ...FUNDS.map((f:any)=>({type:'fund',name:f.n,sub:'Fund · '+f.cos.length+' cos',slug:toSlug(f.n),color:null})),
-    ]
-    if(!cmdQ) return all.slice(0,6)
-    return all.filter(r=>r.name.toLowerCase().includes(cmdQ.toLowerCase())||r.sub.toLowerCase().includes(cmdQ.toLowerCase())).slice(0,8)
-  },[cmdQ])
-
-  function openCmd(){setCmdOpen(true);setCmdQ('');setCmdSel(0);setTimeout(()=>cmdRef.current?.focus(),50)}
-  function closeCmd(){setCmdOpen(false)}
-  function selectCmd(i:number){
-    const r=cmdResults[i];if(!r)return
-    closeCmd()
-    router.push(r.type==='company'?'/company/'+r.slug:'/fund/'+r.slug)
-  }
-
-  useEffect(()=>{
-    function onKey(e:KeyboardEvent){
-      if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openCmd()}
-      if(e.key==='Escape'&&cmdOpen) closeCmd()
-    }
-    window.addEventListener('keydown',onKey)
-    return()=>window.removeEventListener('keydown',onKey)
-  },[cmdOpen])
+  const wlCos=D.filter(co=>cos.includes(co.n))
+  const wlFunds=FUNDS.filter((f:any)=>f.cos.some((c:any)=>cos.includes(c.n)))
 
   return(
     <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap');
-        :root,[data-theme=light],html[data-theme=light]{--bg:#ffffff;--bg2:#f4f5f7;--bg3:#e8eaed;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);--text:#0d0d0d;--t2:#0d0d0d;--t3:#444444;--ac:#1a9e6e;--ac-bg:rgba(26,158,110,.07);--ac-b:rgba(26,158,110,.18)}
-        [data-theme=dark],html[data-theme=dark]{--bg:#08080f;--bg2:#0d0d1a;--bg3:#111124;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#ffffff;--t2:rgba(255,255,255,1);--t3:rgba(255,255,255,.45);--ac:#5CD2A2;--ac-bg:rgba(92,210,162,.08);--ac-b:rgba(92,210,162,.2)}
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Plus Jakarta Sans',sans-serif;margin:0;padding:0}
-        .row:hover td{background:var(--bg2)}
-        .rm:hover{color:var(--text)!important}
-        .tab-btn:hover{color:var(--t2)!important}
-        input{outline:none}
-      `}</style>
+      <style>{CSS}</style>
+      <div data-theme={theme} style={{height:'100vh',display:'flex',overflow:'hidden',background:'var(--bg)',color:'var(--text)'}}>
 
-      <div data-theme={theme} style={{minHeight:'100vh',background:'var(--bg)',color:'var(--text)',fontFamily:"'Plus Jakarta Sans',sans-serif",transition:'background .2s,color .2s'}}>
-
-        {/* NAV */}
-        <nav style={{height:48,display:'flex',alignItems:'center',padding:'0 20px',background:'var(--bg)',borderBottom:'1px solid var(--border)',position:'sticky',top:0,zIndex:10}}>
-          <div onClick={()=>router.push('/')} style={{display:'flex',alignItems:'center',gap:7,fontSize:14,fontWeight:700,letterSpacing:'.1em',cursor:'pointer'}}>
-            <div style={{width:7,height:7,borderRadius:'50%',background:'var(--ac)'}}/>
-            INTELLIGENCE
+        {/* SIDEBAR */}
+        <aside style={{width:220,flexShrink:0,background:'var(--bg2)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',height:'100vh'}}>
+          <div style={{display:'flex',alignItems:'center',gap:8,padding:'14px 16px 12px',borderBottom:'1px solid var(--border)',cursor:'pointer'}} onClick={()=>router.push('/')}>
+            <div style={{width:28,height:28,borderRadius:6,background:'var(--ac)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:800,color:'#fff',flexShrink:0}}>EM</div>
+            <div><div style={{fontSize:12,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--text)'}}>EmergentMap</div><div style={{fontSize:9,color:'var(--t3)'}}>AI-Native Services</div></div>
           </div>
-          <div style={{display:'flex',marginLeft:20}}>
-            {[['Dashboard','/dashboard'],['Funds','/funds'],['Watchlist','/watchlist']].map(([t,href],i)=>(
-              <a key={t} href={href} style={{padding:'0 14px',height:48,display:'flex',alignItems:'center',fontSize:14,fontWeight:500,color:t==='Watchlist'?'var(--text)':'var(--t3)',textDecoration:'none',borderBottom:t==='Watchlist'?'2px solid var(--ac)':'2px solid transparent',transition:'all .15s'}}>
-                {t}{t==='Watchlist'&&wlSize>0&&<span style={{marginLeft:5,fontSize:10,fontWeight:700,background:'var(--ac)',color:'#fff',borderRadius:10,padding:'1px 5px'}}>{wlSize}</span>}
-              </a>
+          <div style={{padding:'12px 12px 4px'}}>
+            <div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'rgba(200,212,232,.2)',padding:'0 6px',marginBottom:4}}>Platform</div>
+            {([['⊞','Dashboard','/dashboard',false],['◈','Funds','/funds',false],['☆','Watchlist','/watchlist',true]] as [string,string,string,boolean][]).map(([icon,label,href,active])=>(
+              <div key={label} className={`nav-item${active?' active':''}`} onClick={()=>router.push(href)}>
+                <span style={{fontSize:13,width:16,textAlign:'center',flexShrink:0}}>{icon}</span>
+                <span style={{flex:1}}>{label}</span>
+                {label==='Watchlist'&&cos.length>0&&<span style={{fontSize:9,background:'var(--ac-bg)',padding:'2px 6px',borderRadius:10,color:'var(--ac-t)'}}>{cos.length}</span>}
+              </div>
             ))}
           </div>
-          <div style={{display:'flex',alignItems:'center',gap:7,marginLeft:'auto'}}>
-            <div onClick={openCmd} style={{display:'flex',alignItems:'center',gap:8,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:'5px 14px',width:220,cursor:'pointer',height:34}}>
-              <span style={{fontSize:14,color:'var(--t3)'}}>⌕</span>
-              <span style={{fontSize:13,color:'var(--t3)',flex:1}}>Search companies, funds…</span>
-            </div>
-            <button onClick={()=>setTheme(t=>t==='dark'?'light':'dark')} style={{width:30,height:30,borderRadius:7,border:'1px solid var(--border)',background:'var(--bg2)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,color:'var(--t2)'}}>
-              {theme==='dark'?'☀':'☾'}
+          <div style={{marginTop:'auto',padding:12,borderTop:'1px solid var(--border)',display:'flex',flexDirection:'column',gap:8}}>
+            <button onClick={toggleTheme} style={{width:'100%',padding:'7px',borderRadius:6,border:'1px solid var(--border)',background:'var(--bg3)',color:'var(--t2)',fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
+              {theme==='dark'?'☀ Light mode':'☾ Dark mode'}
             </button>
-            <a href="/auth" style={{padding:'7px 20px',border:'1px solid var(--border)',borderRadius:6,fontSize:13,fontWeight:500,color:'var(--t2)',background:'transparent',cursor:'pointer',textDecoration:'none'}}>Log in</a>
-            <a href="/auth?mode=signup" style={{padding:'7px 20px',borderRadius:6,fontSize:13,fontWeight:600,background:'var(--ac)',color:'#fff',textDecoration:'none',display:'inline-block'}}>Sign up →</a>
+            <button onClick={()=>router.push('/auth?mode=signup')} style={{width:'100%',padding:8,borderRadius:6,background:'var(--ac)',color:'#fff',border:'none',fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>Upgrade to Pro →</button>
           </div>
-        </nav>
+        </aside>
 
-        <div style={{maxWidth:900,margin:'0 auto',padding:'40px 24px'}}>
-          <div style={{marginBottom:28}}>
-            <h1 style={{fontSize:24,fontWeight:700,marginBottom:6,color:'var(--text)'}}>Watchlist</h1>
-            <div style={{fontSize:14,color:'var(--t3)'}}>{companies.length} companies · {savedFunds.length} funds saved</div>
-          </div>
-
-          {/* Tabs */}
-          <div style={{display:'flex',gap:2,marginBottom:20,borderBottom:'1px solid var(--border)'}}>
-            {[['companies','Companies',companies.length],['funds','Funds',savedFunds.length]].map(([v,label,cnt])=>(
-              <button key={v} className="tab-btn" onClick={()=>setTab(v as any)} style={{padding:'8px 16px',fontSize:13,fontWeight:500,color:tab===v?'var(--text)':'var(--t3)',background:'transparent',border:'none',cursor:'pointer',borderBottom:tab===v?'2px solid var(--ac)':'2px solid transparent',marginBottom:-1,transition:'color .15s'}}>
-                {label} {Number(cnt)>0&&<span style={{fontSize:11,color:tab===v?'var(--ac)':'var(--t3)'}}>{cnt}</span>}
-              </button>
-            ))}
+        {/* MAIN */}
+        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+          <div style={{height:48,display:'flex',alignItems:'center',padding:'0 20px',background:'var(--bg2)',borderBottom:'1px solid var(--border)',flexShrink:0}}>
+            <div style={{fontSize:14,fontWeight:600,color:'var(--text)'}}>Watchlist</div>
+            <span style={{marginLeft:10,fontSize:11,background:'var(--ac-bg)',color:'var(--ac-t)',border:'1px solid var(--ac-b)',padding:'2px 8px',borderRadius:10,fontFamily:"'DM Mono',monospace"}}>{cos.length}</span>
           </div>
 
-          {/* COMPANIES TAB */}
-          {tab==='companies'&&(
-            companies.length===0?(
-              <div style={{textAlign:'center',padding:'80px 24px',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12}}>
-                <div style={{fontSize:28,opacity:.2,marginBottom:12}}>★</div>
-                <div style={{fontSize:15,fontWeight:600,color:'var(--t2)',marginBottom:8}}>No companies saved yet</div>
-                <div style={{fontSize:13,color:'var(--t3)',marginBottom:20}}>Click ☆ on any company to add it here</div>
-                <a href="/dashboard" style={{padding:'8px 20px',borderRadius:7,fontSize:13,fontWeight:600,background:'var(--ac)',color:'#fff',textDecoration:'none',display:'inline-block'}}>Browse Dashboard →</a>
+          {/* TABS */}
+          <div style={{display:'flex',borderBottom:'1px solid var(--border)',background:'var(--bg2)',flexShrink:0,padding:'0 20px'}}>
+            <button className={`tab-btn${tab==='companies'?' active':''}`} onClick={()=>setTab('companies')}>Companies ({wlCos.length})</button>
+            <button className={`tab-btn${tab==='funds'?' active':''}`} onClick={()=>setTab('funds')}>Related Funds ({wlFunds.length})</button>
+          </div>
+
+          <div style={{flex:1,padding:'18px 20px',overflow:'auto'}}>
+            {cos.length===0?(
+              <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'60%',gap:12}}>
+                <div style={{fontSize:36}}>☆</div>
+                <div style={{fontSize:15,fontWeight:500,color:'var(--t2)'}}>Your watchlist is empty</div>
+                <div style={{fontSize:13,color:'var(--t3)'}}>Click ☆ on any company in the dashboard to add it here</div>
+                <button onClick={()=>router.push('/dashboard')} style={{marginTop:8,padding:'9px 20px',borderRadius:7,background:'var(--ac)',color:'#fff',border:'none',fontSize:13,fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>Go to Dashboard →</button>
               </div>
             ):(
               <>
-                <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12,overflow:'hidden',marginBottom:16}}>
-                  <table style={{width:'100%',borderCollapse:'collapse'}}>
-                    <thead style={{background:'var(--bg3)'}}>
-                      <tr style={{borderBottom:'1px solid var(--border)'}}>
-                        {['Company','Sector','Stage','Raised','Valuation','Emp.',''].map(h=>(
-                          <th key={h} style={{padding:'10px 16px',textAlign:'left',fontSize:11,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {companies.map(co=>(
-                        <tr key={co.n} className="row" style={{borderBottom:'1px solid var(--border)',transition:'background .1s'}}>
-                          <td style={{padding:'12px 16px'}}>
-                            <a href={'/company/'+toSlug(co.n)} style={{display:'flex',alignItems:'center',gap:10,textDecoration:'none'}}>
-                              <div style={{width:30,height:30,borderRadius:7,background:co.sc,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}}>{ini(co.n)}</div>
-                              <div>
-                                <div style={{fontSize:14,fontWeight:600,color:'var(--text)'}}>{co.n}{co.pf&&<span style={{marginLeft:5,fontSize:10,color:'var(--ac)'}}>★</span>}</div>
-                                <div style={{fontSize:11,color:'var(--t3)',marginTop:1}}>{co.s}</div>
-                              </div>
-                            </a>
-                          </td>
-                          <td style={{padding:'12px 16px',fontSize:13,color:'var(--t2)'}}>
-                            <span style={{display:'inline-flex',alignItems:'center',gap:4}}>
-                              <span style={{width:5,height:5,borderRadius:'50%',background:co.sc,display:'inline-block'}}/>
-                              {co.sec}
-                            </span>
-                          </td>
-                          <td style={{padding:'12px 16px'}}>
-                            <span style={{padding:'2px 7px',borderRadius:4,fontSize:11,fontWeight:600,background:'rgba(111,163,239,.08)',color:'#6FA3EF',border:'1px solid rgba(111,163,239,.2)'}}>{co.st}</span>
-                          </td>
-                          <td style={{padding:'12px 16px',fontSize:14,fontFamily:"'DM Mono',monospace",color:'var(--ac)',fontWeight:500}}>{fmt(co.r)}</td>
-                          <td style={{padding:'12px 16px',fontSize:14,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{fmt(co.v)}</td>
-                          <td style={{padding:'12px 16px',fontSize:14,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{co.e}</td>
-                          <td style={{padding:'12px 16px'}}>
-                            <button className="rm" onClick={()=>removeCo(co.n)} style={{padding:'4px 10px',borderRadius:5,fontSize:12,color:'var(--t3)',background:'transparent',border:'1px solid var(--border)',cursor:'pointer',transition:'color .15s'}}>
-                              ✕ Remove
-                            </button>
-                          </td>
+                {tab==='companies'&&(
+                  <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,overflow:'hidden'}}>
+                    <table style={{width:'100%',borderCollapse:'collapse'}}>
+                      <thead style={{background:'var(--bg3)'}}>
+                        <tr style={{borderBottom:'1px solid var(--border)'}}>
+                          {['Company','Sector','Investors','Raised','Valuation','Round',''].map(h=>(
+                            <th key={h} style={{padding:'9px 14px',textAlign:'left',fontSize:9,fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t3)'}}>{h}</th>
+                          ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                {companies.length>=2&&(
-                  <div style={{display:'flex',justifyContent:'flex-end'}}>
-                    <a href={'/compare?cos='+companies.slice(0,3).map(c=>toSlug(c.n)).join(',')} style={{padding:'8px 18px',borderRadius:7,fontSize:13,fontWeight:600,background:'rgba(111,163,239,.08)',color:'#6FA3EF',border:'1px solid rgba(111,163,239,.2)',textDecoration:'none',display:'inline-block'}}>
-                      ⚖ Compare first {Math.min(companies.length,3)} →
-                    </a>
+                      </thead>
+                      <tbody>
+                        {wlCos.map(co=>(
+                          <tr key={co.n} onClick={()=>router.push('/company/'+toSlug(co.n))} style={{borderBottom:'1px solid var(--border)',cursor:'pointer',transition:'background .1s'}}>
+                            <td style={{padding:'11px 14px'}}>
+                              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                                <div style={{width:28,height:28,borderRadius:7,background:co.sc,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}}>{ini(co.n)}</div>
+                                <div>
+                                  <div style={{fontSize:13,fontWeight:500,color:'var(--text)'}}>{co.n}{co.pf&&<span style={{marginLeft:4,fontSize:9,padding:'1px 5px',borderRadius:4,background:'var(--ac-bg)',color:'var(--ac-t)',border:'1px solid var(--ac-b)'}}>★</span>}</div>
+                                  <div style={{fontSize:11,color:'var(--t3)'}}>{co.s}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td style={{padding:'11px 14px',fontSize:12,color:'var(--t2)'}}><span style={{display:'inline-block',width:5,height:5,borderRadius:'50%',background:co.sc,marginRight:5,verticalAlign:'middle'}}/>{co.sec}</td>
+                            <td style={{padding:'11px 14px'}}>
+                              <div style={{display:'flex',gap:4}}>
+                                {co.inv.slice(0,2).map((inv:string)=>(
+                                  <span key={inv} style={{padding:'2px 7px',borderRadius:4,fontSize:11,background:'var(--bg3)',border:'1px solid var(--border)',color:'var(--t2)'}}>{inv}</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td style={{padding:'11px 14px',fontSize:13,fontWeight:600,color:'var(--ac-t)',fontFamily:"'DM Mono',monospace"}}>{fmt(co.r)}</td>
+                            <td style={{padding:'11px 14px',fontSize:13,color:'var(--t2)',fontFamily:"'DM Mono',monospace"}}>{fmt(co.v)}</td>
+                            <td style={{padding:'11px 14px'}}>
+                              <span style={{padding:'3px 8px',borderRadius:5,fontSize:10,fontWeight:600,background:'var(--ac-bg)',color:'var(--ac-t)',border:'1px solid var(--ac-b)'}}>{co.st}</span>
+                            </td>
+                            <td style={{padding:'11px 14px'}} onClick={e=>{e.stopPropagation();removeCompany(co.n)}}>
+                              <button style={{width:26,height:26,borderRadius:5,border:'1px solid var(--border)',background:'transparent',color:'var(--t3)',cursor:'pointer',fontSize:12,display:'flex',alignItems:'center',justifyContent:'center'}}>✕</button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
-              </>
-            )
-          )}
 
-          {/* FUNDS TAB */}
-          {tab==='funds'&&(
-            savedFunds.length===0?(
-              <div style={{textAlign:'center',padding:'80px 24px',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12}}>
-                <div style={{fontSize:28,opacity:.2,marginBottom:12}}>🏦</div>
-                <div style={{fontSize:15,fontWeight:600,color:'var(--t2)',marginBottom:8}}>No funds saved yet</div>
-                <div style={{fontSize:13,color:'var(--t3)',marginBottom:20}}>Click ☆ on any fund to add it here</div>
-                <a href="/funds" style={{padding:'8px 20px',borderRadius:7,fontSize:13,fontWeight:600,background:'var(--ac)',color:'#fff',textDecoration:'none',display:'inline-block'}}>Browse Funds →</a>
-              </div>
-            ):(
-              <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12,overflow:'hidden'}}>
-                <table style={{width:'100%',borderCollapse:'collapse'}}>
-                  <thead style={{background:'var(--bg3)'}}>
-                    <tr style={{borderBottom:'1px solid var(--border)'}}>
-                      {['Fund','Type','AI Companies','Deployed',''].map(h=>(
-                        <th key={h} style={{padding:'10px 16px',textAlign:'left',fontSize:11,fontWeight:700,letterSpacing:'.07em',textTransform:'uppercase',color:'var(--t3)'}}>{h}</th>
+                {tab==='funds'&&(
+                  wlFunds.length===0?(
+                    <div style={{textAlign:'center',padding:'40px',color:'var(--t3)'}}>No related funds yet</div>
+                  ):(
+                    <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(260px,1fr))',gap:10}}>
+                      {wlFunds.map((f:any)=>(
+                        <div key={f.n} className="card" onClick={()=>router.push('/fund/'+toSlug(f.n))} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,padding:'16px',cursor:'pointer',transition:'border-color .15s'}}>
+                          <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
+                            <div style={{width:32,height:32,borderRadius:7,background:'var(--ac-bg)',border:'1px solid var(--ac-b)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'var(--ac-t)'}}>{ini(f.n)}</div>
+                            <div style={{flex:1}}><div style={{fontSize:13,fontWeight:500,color:'var(--text)'}}>{f.n}</div><div style={{fontSize:10,color:'var(--t3)',marginTop:1}}>{f.type}</div></div>
+                            <div style={{fontSize:13,fontWeight:700,color:'var(--ac-t)',fontFamily:"'DM Mono',monospace"}}>{fmt(f.raised)}</div>
+                          </div>
+                          <div style={{fontSize:11,color:'var(--t3)'}}>{f.cos.filter((c:any)=>cos.includes(c.n)).length} of your watchlist companies</div>
+                        </div>
                       ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {savedFunds.map((f:any)=>(
-                      <tr key={f.n} className="row" style={{borderBottom:'1px solid var(--border)',transition:'background .1s'}}>
-                        <td style={{padding:'12px 16px'}}>
-                          <a href={'/fund/'+toSlug(f.n)} style={{display:'flex',alignItems:'center',gap:10,textDecoration:'none'}}>
-                            <div style={{width:30,height:30,borderRadius:7,background:'var(--bg3)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'var(--t3)',flexShrink:0}}>{ini(f.n)}</div>
-                            <div style={{fontSize:14,fontWeight:600,color:'var(--text)'}}>{f.n}</div>
-                          </a>
-                        </td>
-                        <td style={{padding:'12px 16px',fontSize:13,color:'var(--t2)'}}>{f.type||'VC'}</td>
-                        <td style={{padding:'12px 16px',fontSize:14,fontFamily:"'DM Mono',monospace",color:'var(--ac)',fontWeight:500}}>{f.cos.length}</td>
-                        <td style={{padding:'12px 16px',fontSize:14,fontFamily:"'DM Mono',monospace",color:'var(--t2)'}}>{fmt(f.raised)}</td>
-                        <td style={{padding:'12px 16px'}}>
-                          <button className="rm" onClick={()=>removeFund(f.n)} style={{padding:'4px 10px',borderRadius:5,fontSize:12,color:'var(--t3)',background:'transparent',border:'1px solid var(--border)',cursor:'pointer',transition:'color .15s'}}>
-                            ✕ Remove
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
-          )}
-        </div>
-      </div>
-
-      {/* CMD+K */}
-      {cmdOpen&&(
-        <div style={{position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(6px)',display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:'15vh'}} onClick={closeCmd}>
-          <div style={{width:560,background:'var(--bg)',border:'1px solid var(--border2)',borderRadius:14,overflow:'hidden',boxShadow:'0 24px 60px rgba(0,0,0,0.15)'}} onClick={e=>e.stopPropagation()}>
-            <div style={{display:'flex',alignItems:'center',gap:10,padding:'14px 16px',borderBottom:'1px solid var(--border)'}}>
-              <span style={{fontSize:16,color:'var(--t3)'}}>⌕</span>
-              <input ref={cmdRef} value={cmdQ} onChange={e=>{setCmdQ(e.target.value);setCmdSel(0)}}
-                onKeyDown={e=>{
-                  if(e.key==='Escape') closeCmd()
-                  else if(e.key==='ArrowDown') setCmdSel(s=>Math.min(s+1,cmdResults.length-1))
-                  else if(e.key==='ArrowUp') setCmdSel(s=>Math.max(s-1,0))
-                  else if(e.key==='Enter') selectCmd(cmdSel)
-                }}
-                placeholder="Search companies, funds…"
-                style={{flex:1,background:'transparent',border:'none',outline:'none',fontSize:15,color:'var(--text)',fontFamily:"'Plus Jakarta Sans',sans-serif"}}
-              />
-              <kbd style={{fontSize:10,color:'var(--t3)',background:'var(--bg2)',padding:'2px 6px',borderRadius:4,border:'1px solid var(--border)'}}>ESC</kbd>
-            </div>
-            <div style={{maxHeight:380,overflowY:'auto'}}>
-              {cmdResults.map((r:any,i:number)=>(
-                <a key={r.name+i} href={r.type==='company'?'/company/'+r.slug:'/fund/'+r.slug}
-                  style={{display:'flex',alignItems:'center',gap:12,padding:'10px 16px',background:i===cmdSel?'rgba(92,210,162,0.08)':'transparent',borderLeft:i===cmdSel?'2px solid #5CD2A2':'2px solid transparent',textDecoration:'none'}}
-                  onMouseEnter={()=>setCmdSel(i)}>
-                  {r.type==='company'
-                    ?<div style={{width:32,height:32,borderRadius:8,background:r.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'#fff',flexShrink:0}}>{ini(r.name)}</div>
-                    :<div style={{width:32,height:32,borderRadius:8,background:'var(--bg3)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:15,flexShrink:0}}>🏦</div>
-                  }
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontSize:13,fontWeight:600,color:'var(--text)',marginBottom:2}}>{r.name}</div>
-                    <div style={{fontSize:11,color:'var(--t3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.sub}</div>
-                  </div>
-                </a>
-              ))}
-            </div>
-            <div style={{padding:'8px 16px',borderTop:'1px solid var(--border)',display:'flex',gap:12,fontSize:10,color:'var(--t3)'}}>
-              <span>↑↓ navigate</span><span>↵ select</span><span>ESC close</span>
-            </div>
+                    </div>
+                  )
+                )}
+              </>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </>
   )
 }
