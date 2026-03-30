@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
     })
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json({ error: err.flatten().fieldErrors }, { status: 400 })
+      return NextResponse.json({ error: (err as z.ZodError).flatten().fieldErrors }, { status: 400 })
     }
     console.error('[GET /api/companies]', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
