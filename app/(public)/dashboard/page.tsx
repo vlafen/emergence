@@ -92,7 +92,8 @@ export default function DashboardPage(){
   const [wl,setWl]=useState<Set<string>>(new Set())
   const [toast,setToast]=useState('')
   const [theme,setTheme]=useState<'dark'|'light'>('dark')
-  const [collapsed,setCollapsed]=useState(false)
+  const [pinned,setPinned]=useState(false)
+  const [hovered,setHovered]=useState(false)
   const [menuOpen,setMenuOpen]=useState(false)
   const cmdRef=useRef<HTMLInputElement>(null)
   const router=useRouter()
@@ -101,7 +102,7 @@ export default function DashboardPage(){
     try{const s=JSON.parse(localStorage.getItem('wl_companies')||'[]');setWl(new Set(s))}catch{}
     const t=localStorage.getItem('theme') as 'dark'|'light'|null
     const th=t||'dark';setTheme(th);document.documentElement.setAttribute('data-theme',th)
-    const col=localStorage.getItem('sb_collapsed')==='1';setCollapsed(col)
+    const p=localStorage.getItem('sb_pinned')==='1';setPinned(p)
   },[])
 
   function toggleTheme(){
@@ -109,8 +110,8 @@ export default function DashboardPage(){
     setTheme(next);document.documentElement.setAttribute('data-theme',next);localStorage.setItem('theme',next)
   }
 
-  function toggleSidebar(){
-    const next=!collapsed;setCollapsed(next);localStorage.setItem('sb_collapsed',next?'1':'0')
+  function togglePin(){
+    const next=!pinned;setPinned(next);localStorage.setItem('sb_pinned',next?'1':'0')
   }
 
   function toggleWL(name:string,e:React.MouseEvent){
@@ -173,7 +174,8 @@ export default function DashboardPage(){
     return{bg:'rgba(245,158,11,.1)',c:'#fcd34d',b:'rgba(245,158,11,.22)'}
   }
 
-  const sw=collapsed?56:220
+  const expanded=pinned||hovered
+  const sw=expanded?220:56
 
   return(
     <>
@@ -190,11 +192,12 @@ export default function DashboardPage(){
           --sb-bg:#0c0c14;--topbar-bg:#0e0e18;
         }
         html[data-theme=light]{
-          --bg:#f4f5f7;--bg2:#ffffff;--bg3:#f1f2f4;
-          --border:rgba(0,0,0,.09);--border2:rgba(0,0,0,.18);
-          --text:#0d0d0d;--t2:#1a1a1a;--t3:rgba(10,10,10,.45);
-          --ac:#2563EB;--ac-bg:rgba(37,99,235,.08);--ac-b:rgba(37,99,235,.22);--ac-t:#1d4ed8;
+          --bg:#eef0f2;--bg2:#ffffff;--bg3:#f4f5f6;
+          --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.15);
+          --text:#111111;--t2:#222222;--t3:rgba(0,0,0,.42);
+          --ac:#2563EB;--ac-bg:rgba(37,99,235,.07);--ac-b:rgba(37,99,235,.2);--ac-t:#1d4ed8;
           --sb-bg:#ffffff;--topbar-bg:#ffffff;
+          --card-shadow:0 1px 3px rgba(0,0,0,.06);
         }
 
         .nav-item{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--t3);transition:all .12s;font-size:13px;border-left:2px solid transparent;margin-bottom:1px;white-space:nowrap;overflow:hidden}
@@ -228,24 +231,26 @@ export default function DashboardPage(){
       <div data-theme={theme} style={{height:'100vh',display:'flex',overflow:'hidden',background:'var(--bg)',color:'var(--text)'}}>
 
         {/* ── SIDEBAR ── */}
-        <aside style={{width:sw,flexShrink:0,background:'var(--sb-bg)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',height:'100vh',transition:'width .2s',overflow:'hidden'}}>
+        <aside onMouseEnter={()=>{if(!pinned)setHovered(true)}} onMouseLeave={()=>setHovered(false)} style={{width:pinned?sw:56,flexShrink:0,background:'var(--sb-bg)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden',position:hovered&&!pinned?'absolute':'relative',zIndex:50,transition:'width .2s ease',boxShadow:hovered&&!pinned?'4px 0 20px rgba(0,0,0,.2)':'none'}}>
 
           {/* Logo + collapse button */}
           <div style={{display:'flex',alignItems:'center',gap:8,padding:'12px 12px 10px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
             <div onClick={()=>router.push('/')} style={{width:28,height:28,borderRadius:6,background:'var(--ac)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:800,color:'#fff',flexShrink:0,cursor:'pointer'}}>EM</div>
-            {!collapsed&&(
+            {expanded&&(
               <div style={{flex:1,minWidth:0,cursor:'pointer'}} onClick={()=>router.push('/')}>
                 <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'var(--text)',whiteSpace:'nowrap'}}>EmergentMap</div>
                 <div style={{fontSize:9,color:'var(--t3)'}}>AI-Native Services</div>
               </div>
             )}
-            <button className="collapse-btn" onClick={toggleSidebar} style={{marginLeft:collapsed?0:'auto'}}>
-              {collapsed?'›':'‹'}
-            </button>
+            {expanded&&(
+              <button onClick={togglePin} title={pinned?'Unpin sidebar':'Pin sidebar'} style={{marginLeft:'auto',width:22,height:22,borderRadius:5,border:'1px solid var(--border)',background:pinned?'var(--ac-bg)':'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:pinned?'var(--ac-t)':'var(--t3)',fontSize:11,flexShrink:0,transition:'all .15s'}}>
+                {pinned?'📌':'📍'}
+              </button>
+            )}
           </div>
 
           {/* Search */}
-          {!collapsed&&(
+          {expanded&&(
             <div style={{padding:'8px 10px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
               <div onClick={openCmd} style={{display:'flex',alignItems:'center',gap:7,padding:'6px 10px',background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:7,cursor:'pointer'}}>
                 <span style={{fontSize:13,color:'var(--t3)'}}>⌕</span>
@@ -254,7 +259,7 @@ export default function DashboardPage(){
               </div>
             </div>
           )}
-          {collapsed&&(
+          {!expanded&&(
             <div style={{padding:'8px',borderBottom:'1px solid var(--border)',flexShrink:0}}>
               <button onClick={openCmd} style={{width:36,height:32,borderRadius:7,border:'1px solid var(--border)',background:'var(--bg3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,color:'var(--t3)',margin:'0 auto'}}>⌕</button>
             </div>
@@ -262,31 +267,31 @@ export default function DashboardPage(){
 
           {/* Nav */}
           <div style={{padding:'10px 8px 4px',overflow:'hidden'}}>
-            {!collapsed&&<div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--t3)',opacity:.5,padding:'0 6px',marginBottom:4}}>Platform</div>}
+            {expanded&&<div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--t3)',opacity:.5,padding:'0 6px',marginBottom:4,whiteSpace:'nowrap'}}>Platform</div>}
             {NAV_ITEMS.map(item=>(
-              <div key={item.key} className={`nav-item${item.key==='dashboard'?' active':''}`} onClick={()=>router.push(item.href)} title={collapsed?item.label:''}>
+              <div key={item.key} className={`nav-item${item.key==='dashboard'?' active':''}`} onClick={()=>router.push(item.href)} title={expanded?'':item.label}>
                 <span style={{fontSize:14,width:16,textAlign:'center',flexShrink:0}}>{item.icon}</span>
-                {!collapsed&&<span className="lbl" style={{flex:1}}>{item.label}</span>}
-                {!collapsed&&item.badge&&<span style={{fontSize:9,background:item.badge==='New'?'rgba(37,99,235,.15)':'rgba(255,255,255,.06)',padding:'2px 6px',borderRadius:10,color:item.badge==='New'?'var(--ac-t)':'var(--t3)'}}>{item.badge}</span>}
-                {!collapsed&&item.key==='watchlist'&&wl.size>0&&<span style={{fontSize:9,background:'var(--ac-bg)',padding:'2px 6px',borderRadius:10,color:'var(--ac-t)'}}>{wl.size}</span>}
+                {expanded&&<span className="lbl" style={{flex:1}}>{item.label}</span>}
+                {expanded&&item.badge&&<span style={{fontSize:9,background:item.badge==='New'?'rgba(37,99,235,.15)':'rgba(255,255,255,.06)',padding:'2px 6px',borderRadius:10,color:item.badge==='New'?'var(--ac-t)':'var(--t3)'}}>{item.badge}</span>}
+                {expanded&&item.key==='watchlist'&&wl.size>0&&<span style={{fontSize:9,background:'var(--ac-bg)',padding:'2px 6px',borderRadius:10,color:'var(--ac-t)'}}>{wl.size}</span>}
               </div>
             ))}
           </div>
 
           <div style={{padding:'8px 8px 4px',overflow:'hidden'}}>
-            {!collapsed&&<div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--t3)',opacity:.5,padding:'0 6px',marginBottom:4}}>Analysis</div>}
+            {expanded&&<div style={{fontSize:9,fontWeight:700,letterSpacing:'.12em',textTransform:'uppercase',color:'var(--t3)',opacity:.5,padding:'0 6px',marginBottom:4,whiteSpace:'nowrap'}}>Analysis</div>}
             {NAV_ANALYSIS.map(item=>(
-              <div key={item.key} className="nav-item" onClick={()=>router.push(item.href)} title={collapsed?item.label:''}>
+              <div key={item.key} className="nav-item" onClick={()=>router.push(item.href)} title={expanded?'':item.label}>
                 <span style={{fontSize:14,width:16,textAlign:'center',flexShrink:0}}>{item.icon}</span>
-                {!collapsed&&<span className="lbl" style={{flex:1}}>{item.label}</span>}
-                {!collapsed&&item.badge&&<span style={{fontSize:9,background:'rgba(37,99,235,.15)',padding:'2px 6px',borderRadius:10,color:'var(--ac-t)'}}>{item.badge}</span>}
+                {expanded&&<span className="lbl" style={{flex:1}}>{item.label}</span>}
+                {expanded&&item.badge&&<span style={{fontSize:9,background:'rgba(37,99,235,.15)',padding:'2px 6px',borderRadius:10,color:'var(--ac-t)'}}>{item.badge}</span>}
               </div>
             ))}
           </div>
 
           {/* Footer — user only, no upgrade button */}
           <div style={{marginTop:'auto',padding:'10px 8px',borderTop:'1px solid var(--border)',flexShrink:0}}>
-            {collapsed?(
+            {!expanded?(
               <div style={{width:32,height:32,borderRadius:'50%',background:'var(--ac-bg)',border:'1px solid var(--ac-b)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'var(--ac-t)',margin:'0 auto',cursor:'pointer'}}>VF</div>
             ):(
               <div style={{display:'flex',alignItems:'center',gap:8,padding:'5px 6px',borderRadius:7,cursor:'pointer'}}>
@@ -301,7 +306,7 @@ export default function DashboardPage(){
         </aside>
 
         {/* ── MAIN ── */}
-        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',marginLeft:hovered&&!pinned?0:0}}>
 
           {/* TOPBAR */}
           <div style={{height:48,display:'flex',alignItems:'center',padding:'0 12px',background:'var(--topbar-bg)',borderBottom:'1px solid var(--border)',flexShrink:0,gap:8}}>
