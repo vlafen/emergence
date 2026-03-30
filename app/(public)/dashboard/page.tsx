@@ -93,6 +93,7 @@ export default function DashboardPage(){
   const [toast,setToast]=useState('')
   const [theme,setTheme]=useState<'dark'|'light'>('dark')
   const [collapsed,setCollapsed]=useState(false)
+  const [menuOpen,setMenuOpen]=useState(false)
   const cmdRef=useRef<HTMLInputElement>(null)
   const router=useRouter()
 
@@ -189,10 +190,10 @@ export default function DashboardPage(){
           --sb-bg:#0c0c14;--topbar-bg:#0e0e18;
         }
         html[data-theme=light]{
-          --bg:#f0ede6;--bg2:#ffffff;--bg3:#f5f3ee;
-          --border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);
-          --text:#0d0d0d;--t2:#1a1a1a;--t3:rgba(10,10,10,.42);
-          --ac:#2563EB;--ac-bg:rgba(37,99,235,.08);--ac-b:rgba(37,99,235,.2);--ac-t:#1d4ed8;
+          --bg:#f4f5f7;--bg2:#ffffff;--bg3:#f1f2f4;
+          --border:rgba(0,0,0,.09);--border2:rgba(0,0,0,.18);
+          --text:#0d0d0d;--t2:#1a1a1a;--t3:rgba(10,10,10,.45);
+          --ac:#2563EB;--ac-bg:rgba(37,99,235,.08);--ac-b:rgba(37,99,235,.22);--ac-t:#1d4ed8;
           --sb-bg:#ffffff;--topbar-bg:#ffffff;
         }
 
@@ -303,19 +304,46 @@ export default function DashboardPage(){
         <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
 
           {/* TOPBAR */}
-          <div style={{height:48,display:'flex',alignItems:'center',padding:'0 16px',background:'var(--topbar-bg)',borderBottom:'1px solid var(--border)',flexShrink:0,gap:8}}>
-            <div style={{fontSize:14,fontWeight:600,color:'var(--text)'}}>AI-Native Services Dashboard</div>
-            <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:6}}>
-              {/* Theme switcher — like tokenomist */}
-              <div style={{display:'flex',background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:7,overflow:'hidden',padding:2,gap:2}}>
-                <button className={`theme-btn${theme==='light'?' on':''}`} onClick={()=>{if(theme!=='light')toggleTheme()}} title="Light mode">☀</button>
-                <button className={`theme-btn${theme==='dark'?' on':''}`} onClick={()=>{if(theme!=='dark')toggleTheme()}} title="Dark mode">☾</button>
-              </div>
+          <div style={{height:48,display:'flex',alignItems:'center',padding:'0 12px',background:'var(--topbar-bg)',borderBottom:'1px solid var(--border)',flexShrink:0,gap:8}}>
+            {/* Search bar — left, full width like Tokenomist */}
+            <div onClick={openCmd} style={{flex:1,display:'flex',alignItems:'center',gap:8,padding:'6px 12px',background:'var(--bg3)',border:'1px solid var(--border)',borderRadius:7,cursor:'pointer',maxWidth:520,height:34,transition:'border-color .15s'}} onMouseOver={e=>e.currentTarget.style.borderColor='var(--border2)'} onMouseOut={e=>e.currentTarget.style.borderColor='var(--border)'}>
+              <span style={{fontSize:14,color:'var(--t3)'}}>⌕</span>
+              <span style={{fontSize:13,color:'var(--t3)',flex:1}}>Search companies, funds, sectors…</span>
+              <kbd style={{fontSize:10,color:'var(--t3)',background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:4,padding:'1px 6px',flexShrink:0}}>/</kbd>
+            </div>
+            {/* Right buttons */}
+            <div style={{display:'flex',alignItems:'center',gap:6,marginLeft:'auto'}}>
               {someSelected&&(
                 <button onClick={()=>exportToCSV(data.filter(c=>selected.has(c.n)))} style={{padding:'6px 12px',borderRadius:6,border:'1px solid var(--ac-b)',background:'var(--ac-bg)',color:'var(--ac-t)',fontSize:12,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>↓ Export {selected.size}</button>
               )}
-              <button style={{padding:'6px 12px',border:'1px solid var(--border)',borderRadius:6,background:'transparent',color:'var(--t3)',fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>Request Update</button>
-              <button onClick={()=>router.push('/auth?mode=signup')} style={{padding:'6px 14px',border:'none',borderRadius:6,background:'var(--ac)',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer'}}>Get Pro →</button>
+              <button style={{padding:'6px 12px',border:'1px solid var(--border)',borderRadius:6,background:'transparent',color:'var(--t3)',fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>Request Update ▾</button>
+              <button onClick={()=>router.push('/auth')} style={{padding:'6px 14px',border:'1px solid var(--border)',borderRadius:6,background:'transparent',color:'var(--t2)',fontFamily:"'DM Sans',sans-serif",fontSize:12,cursor:'pointer'}}>Log in</button>
+              <button onClick={()=>router.push('/auth?mode=signup')} style={{padding:'6px 14px',border:'none',borderRadius:6,background:'var(--ac)',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+                <span style={{fontSize:11}}>♛</span> Get Pro
+              </button>
+              {/* Menu ☰ with dropdown */}
+              <div style={{position:'relative'}}>
+                <button onClick={()=>setMenuOpen(o=>!o)} style={{width:34,height:34,borderRadius:7,border:'1px solid var(--border)',background:'transparent',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--t2)',fontSize:16}}>☰</button>
+                {menuOpen&&(
+                  <>
+                    <div style={{position:'fixed',inset:0,zIndex:100}} onClick={()=>setMenuOpen(false)}/>
+                    <div style={{position:'absolute',top:40,right:0,width:220,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,boxShadow:'0 8px 32px rgba(0,0,0,.2)',padding:12,zIndex:200}}>
+                      <div style={{fontSize:12,color:'var(--t3)',marginBottom:10,padding:'0 4px'}}>Appearance</div>
+                      <div style={{display:'flex',gap:6,marginBottom:12,padding:'0 4px'}}>
+                        <button onClick={()=>{if(theme!=='light')toggleTheme()}} style={{flex:1,padding:'8px',borderRadius:7,border:`1px solid ${theme==='light'?'var(--ac-b)':'var(--border)'}`,background:theme==='light'?'var(--ac-bg)':'var(--bg3)',cursor:'pointer',color:theme==='light'?'var(--ac-t)':'var(--t3)',fontSize:18,transition:'all .12s'}}>☀</button>
+                        <button onClick={()=>{if(theme!=='dark')toggleTheme()}} style={{flex:1,padding:'8px',borderRadius:7,border:`1px solid ${theme==='dark'?'var(--ac-b)':'var(--border)'}`,background:theme==='dark'?'var(--ac-bg)':'var(--bg3)',cursor:'pointer',color:theme==='dark'?'var(--ac-t)':'var(--t3)',fontSize:18,transition:'all .12s'}}>☾</button>
+                      </div>
+                      <div style={{height:1,background:'var(--border)',margin:'4px -4px 8px'}}/>
+                      <div onClick={()=>{router.push('/funds');setMenuOpen(false)}} style={{display:'flex',alignItems:'center',gap:10,padding:'8px',borderRadius:7,cursor:'pointer',fontSize:13,color:'var(--t2)'}} onMouseOver={e=>(e.currentTarget.style.background='var(--bg3)')} onMouseOut={e=>(e.currentTarget.style.background='transparent')}>
+                        <span>◈</span> Funds
+                      </div>
+                      <div onClick={()=>{router.push('/watchlist');setMenuOpen(false)}} style={{display:'flex',alignItems:'center',gap:10,padding:'8px',borderRadius:7,cursor:'pointer',fontSize:13,color:'var(--t2)'}} onMouseOver={e=>(e.currentTarget.style.background='var(--bg3)')} onMouseOut={e=>(e.currentTarget.style.background='transparent')}>
+                        <span>☆</span> Watchlist {wl.size>0&&<span style={{marginLeft:'auto',fontSize:10,background:'var(--ac-bg)',color:'var(--ac-t)',padding:'1px 6px',borderRadius:8}}>{wl.size}</span>}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
