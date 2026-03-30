@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080f;--bg2:#0d0d1a;--bg3:#111124;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#ffffff;--t2:rgba(255,255,255,1);--t3:rgba(255,255,255,1);--ac:#5CD2A2;--ac-bg:rgba(92,210,162,.08);--ac-b:rgba(92,210,162,.2)}
+[data-theme=light]{--bg:#faf9f5;--bg2:#f2f0eb;--bg3:#e8e6e0;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);--text:#0f0f0e;--t2:rgba(15,15,14,.55);--t3:rgba(15,15,14,.35);--ac:#1a9e6e;--ac-bg:rgba(26,158,110,.08);--ac-b:rgba(26,158,110,.2)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;transition:background .2s,color .2s}
+/* NAV */
+nav{height:48px;display:flex;align-items:center;padding:0 20px;background:var(--bg);border-bottom:1px solid var(--border);flex-shrink:0}
+.logo{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;letter-spacing:.1em}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ac)}
+.tabs{display:flex;margin-left:20px}
+.tab{padding:0 14px;height:48px;display:flex;align-items:center;font-size:14px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab:hover{color:var(--t2)}
+.tab.on{color:var(--text);border-bottom-color:var(--ac)}
+.nav-r{display:flex;align-items:center;gap:7px;margin-left:auto}
+.th-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--t2)}
+.btn-o{padding:7px 20px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:500;color:var(--t2);background:transparent;cursor:pointer}
+.btn-s{padding:7px 20px;border-radius:6px;font-size:13px;font-weight:600;background:var(--ac);color:#fff;border:none;cursor:pointer}
+/* PAGES */
+.page{display:none;flex:1;overflow:hidden;flex-direction:column}
+.page.on{display:flex}
+/* DASH LAYOUT: left sidebar | center table | right investors */
+.dash{display:grid;grid-template-columns:180px 1fr;flex:1;overflow:hidden}
+/* LEFT */
+.sb{border-right:1px solid var(--border);background:var(--bg);overflow-y:auto}
+.sb-t{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);padding:14px 14px 6px}
+.sb-r{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:background .12s}
+.sb-r:hover{background:var(--bg2)}
+.sb-r.on{background:var(--ac-bg)}
+.sb-d{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sb-n{font-size:14px;font-weight:500;flex:1;color:var(--t2)}
+.sb-r.on .sb-n{color:var(--ac);font-weight:600}
+.sb-c{font-size:13px;color:var(--t3);font-family:'DM Mono',monospace}
+.sb-div{height:1px;background:var(--border);margin:6px 14px}
+/* CENTER */
+.ctr{display:flex;flex-direction:column;overflow:hidden}
+.bar{display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.sw{position:relative;flex:1;max-width:200px}
+.sw input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px 6px 28px;font-size:14px;color:var(--text);outline:none;font-family:'Inter',sans-serif}
+.sw input::placeholder{color:var(--t3)}
+.sw input:focus{border-color:var(--ac)}
+.si{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--t3);pointer-events:none}
+.sel{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;font-family:'Inter',sans-serif}
+.pill{padding:4px 10px;border-radius:20px;font-size:13px;font-weight:600;border:1px solid var(--border);color:var(--t3);cursor:pointer;background:transparent;transition:all .15s}
+.pill.on{background:var(--ac-bg);border-color:var(--ac-b);color:var(--ac)}
+.vt{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-left:auto}
+.vb{padding:5px 10px;font-size:14px;cursor:pointer;color:var(--t3);background:var(--bg2);border:none}
+.vb.on{color:var(--ac);background:var(--ac-bg)}
+.cl{font-size:13px;color:var(--t3);font-family:'DM Mono',monospace;white-space:nowrap}
+/* TABLE */
+.ts{flex:1;overflow:auto}
+table{width:100%;border-collapse:collapse}
+thead{position:sticky;top:0;z-index:5;background:var(--bg2)}
+thead tr{border-bottom:1px solid var(--border)}
+th{padding:8px 12px;text-align:left;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--t2)}
+th.s{color:var(--ac)}
+tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+tbody tr:hover{background:var(--bg2)}
+td{padding:10px 12px;font-size:14px;color:var(--t2);white-space:nowrap}
+.tc{display:flex;align-items:center;gap:8px}
+.cl2{width:26px;height:26px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--t3);flex-shrink:0}
+.cn{font-size:14px;font-weight:600;color:var(--text)}
+.cs{font-size:12px;color:rgba(255,255,255,.45);margin-top:1px}
+.bpf{display:inline-flex;padding:2px 5px;border-radius:4px;font-size:11px;font-weight:600;border:1px solid;margin-left:3px;vertical-align:middle;background:var(--ac-bg);color:var(--ac);border-color:var(--ac-b)}
+.bst{display:inline-flex;padding:2px 5px;border-radius:4px;font-size:11px;font-weight:600;border:1px solid;margin-left:3px;vertical-align:middle;background:rgba(111,163,239,.08);color:#6FA3EF;border-color:rgba(111,163,239,.2)}
+[data-theme=light] .bst{color:#1d4ed8;background:rgba(29,78,216,.07);border-color:rgba(29,78,216,.15)}
+.mn{font-family:'DM Mono',monospace}
+.gr{color:var(--ac);font-weight:500}
+.mu{color:var(--t3)}
+.sd{width:5px;height:5px;border-radius:50%;display:inline-block;margin-right:4px;vertical-align:middle}
+/* GRID */
+.gs{flex:1;overflow:auto;padding:12px}
+.gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}
+.gc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:13px;cursor:pointer;transition:all .15s}
+.gc:hover{border-color:var(--border2)}
+.gc-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:9px}
+.gm{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
+.gmi{background:var(--bg3);border-radius:5px;padding:6px 8px}
+.gmv{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--text)}
+.gmv.g{color:var(--ac)}
+.gml{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);margin-top:1px}
+/* RIGHT INVESTORS */
+
+.ich:hover{border-color:var(--border2);color:var(--text)}
+/* FUNDS PAGE */
+.fl{display:grid;grid-template-columns:180px 1fr 320px;flex:1;overflow:hidden}
+.fsb{border-right:1px solid var(--border);background:var(--bg);overflow-y:auto}
+.fc{display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)}
+.fbar{display:flex;align-items:center;gap:6px;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.fsc{flex:1;overflow:auto}
+.ft{width:100%;border-collapse:collapse}
+.ft thead{position:sticky;top:0;background:var(--bg2);z-index:5}
+.ft thead tr{border-bottom:1px solid var(--border)}
+.ft th{padding:8px 14px;text-align:left;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--t3);white-space:nowrap;cursor:pointer}
+.ft th.s{color:var(--ac)}
+.ft tbody tr{border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.ft tbody tr:hover{background:var(--bg2)}
+.ft tbody tr.on{background:var(--ac-bg)}
+.ft td{padding:10px 14px;font-size:14px;color:var(--t2);white-space:nowrap}
+.fl2{width:26px;height:26px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--t3);flex-shrink:0}
+.fnc{display:flex;align-items:center;gap:9px}
+.fn{font-size:14px;font-weight:600;color:var(--text)}
+.ftp{font-size:12px;color:var(--t3);margin-top:1px}
+.t1{padding:2px 6px;border-radius:4px;font-size:12px;font-weight:700;background:rgba(202,138,4,.08);color:#ca8a04;border:1px solid rgba(202,138,4,.2)}
+.t2c{padding:2px 6px;border-radius:4px;font-size:12px;font-weight:700;background:var(--bg3);color:var(--t3);border:1px solid var(--border)}
+.ct{display:flex;gap:3px;flex-wrap:wrap}
+.ctag{padding:2px 5px;border-radius:3px;font-size:12px;background:var(--bg3);border:1px solid var(--border);color:var(--t2);white-space:nowrap}
+.ctag.p{background:var(--ac-bg);border-color:var(--ac-b);color:var(--ac)}
+/* FUND DETAIL */
+.fd{background:var(--bg);overflow-y:auto;display:flex;flex-direction:column}
+.fde{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--t3);text-align:center;padding:24px}
+.fdh{padding:16px 18px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg)}
+.fdl{width:36px;height:36px;border-radius:9px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--t2);margin-bottom:8px}
+.fdn{font-size:17px;font-weight:700;color:var(--text)}
+.fds{font-size:13px;color:var(--t3);margin-top:2px}
+.fdb{padding:14px 18px}
+.fdsec{margin-bottom:14px}
+.fdst{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:7px}
+.fdg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.fdm{background:var(--bg2);border-radius:7px;padding:9px 11px}
+.fdmv{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text)}
+.fdmv.g{color:var(--ac)}
+.fdml{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-top:2px}
+.fdc{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg2);border-radius:6px;border:1px solid var(--border);margin-bottom:4px;cursor:pointer}
+.fdc:hover{border-color:var(--border2)}
+.fdcn{font-size:14px;font-weight:600;flex:1;color:var(--text)}
+.fdcr{font-family:'DM Mono',monospace;font-size:14px;color:var(--ac)}
+.fdcs{font-size:12px;color:var(--t3)}
+.ftag{padding:3px 7px;border-radius:4px;font-size:13px;background:var(--bg3);border:1px solid var(--border);color:var(--t2)}
+/* DRAWER */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(4px)}
+.ov.on{opacity:1;pointer-events:all}
+.dw{position:fixed;right:0;top:0;bottom:0;width:360px;background:var(--bg);border-left:1px solid var(--border2);z-index:51;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.dw.on{transform:translateX(0)}
+.dwh{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;position:sticky;top:0;background:var(--bg)}
+.dwx{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--t2);margin-left:auto;flex-shrink:0}
+.dwb{padding:14px 18px}
+.dws{margin-bottom:14px}
+.dwst{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:7px}
+.dwg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.dwm{background:var(--bg2);border-radius:7px;padding:9px 11px}
+.dwmv{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text)}
+.dwmv.g{color:var(--ac)}
+.dwml{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-top:2px}
+.dwr{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg2);border-radius:6px;border:1px solid var(--border);margin-bottom:4px;cursor:pointer}
+.dwr:hover{border-color:var(--border2)}
+.dwrn{font-size:14px;font-weight:600;flex:1;color:var(--text)}
+.dwra{font-size:13px;color:var(--ac)}
+.dwrs{font-size:12px;color:var(--t3)}
+.ph{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--t3)}
+</style>
+</head>
+<body data-theme="dark">
+<nav>
+  <div class="logo"><div class="dot"></div>INTELLIGENCE</div>
+  <div class="tabs">
+    <div class="tab on" onclick="goPage('dashboard',this)">Dashboard</div>
+    <div class="tab" onclick="goPage('marketmap',this)">Market Map</div>
+    <div class="tab" onclick="goPage('funds',this)">Funds</div>
+    <div class="tab" onclick="goPage('news',this)">News</div>
+  </div>
+  <div class="nav-r">
+    <button class="th-btn" id="thbtn" onclick="toggleTheme()">☀</button>
+    <button class="btn-o">Log in</button>
+    <button class="btn-s">Sign up →</button>
+  </div>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page on" id="page-dashboard">
+  <div class="dash">
+    <div class="sb">
+      <div class="sb-t">Sectors</div>
+      <div id="sbl"></div>
+      <div class="sb-div"></div>
+      <div class="sb-t">Stage</div>
+      <div id="sbst"></div>
+      <div class="sb-div"></div>
+      <div class="sb-t">Filter</div>
+      <div class="sb-r" id="pfrow" onclick="togglePF(this)">
+        <div class="sb-d" style="background:var(--ac)"></div>
+        <div class="sb-n">★ Portfolio only</div>
+      </div>
+    </div>
+    <div class="ctr">
+      <div class="bar">
+        <div class="sw"><span class="si">⌕</span><input type="text" id="srch" placeholder="Search…" oninput="render()"></div>
+        <select class="sel" id="srt" onchange="render()">
+          <option value="r">↓ Raised</option>
+          <option value="v">↓ Valuation</option>
+          <option value="e">↓ Employees</option>
+          <option value="y">↓ Founded</option>
+          <option value="n">A→Z</option>
+        </select>
+        <div class="pill on" onclick="clearSec()">All</div>
+        <div class="pill" id="pfpill" onclick="togglePF2()">★ Portfolio</div>
+        <div class="vt">
+          <button class="vb on" id="vbt" onclick="setV('t',this)">☰</button>
+          <button class="vb" id="vbg" onclick="setV('g',this)">⊞</button>
+        </div>
+        <div class="cl" id="cnt">20</div>
+      </div>
+      <div class="ts" id="tv">
+        <table>
+          <thead><tr>
+            <th style="width:28px">#</th>
+            <th>Company</th>
+            <th>Sector</th>
+            <th>Investors</th><th class="s">Raised ↓</th>
+            <th>Valuation</th>
+            <th>Emp.</th>
+            <th>Year</th>
+          </tr></thead>
+          <tbody id="tb"></tbody>
+        </table>
+      </div>
+      <div class="gs" id="gv" style="display:none"><div class="gg" id="gg"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MARKET MAP -->
+<div class="page" id="page-marketmap">
+  <div class="ph"><div style="font-size:32px;opacity:.3">🗺</div><div style="font-size:14px;font-weight:600;color:var(--t2)">Market Map</div><div style="font-size:12px">Coming next sprint</div></div>
+</div>
+
+<!-- FUNDS -->
+<div class="page" id="page-funds">
+  <div class="fl">
+    <div class="fsb">
+      <div class="sb-t">Type</div>
+      <div class="sb-r on" onclick="setFT('',this)"><div class="sb-d" style="background:var(--t2)"></div><div class="sb-n">All funds</div><div class="sb-c" id="fttl">0</div></div>
+      <div class="sb-r" onclick="setFT('VC',this)"><div class="sb-d" style="background:#6FA3EF"></div><div class="sb-n">VC</div></div>
+      <div class="sb-r" onclick="setFT('CVC',this)"><div class="sb-d" style="background:#F0C060"></div><div class="sb-n">CVC</div></div>
+      <div class="sb-r" onclick="setFT('Accelerator',this)"><div class="sb-d" style="background:var(--ac)"></div><div class="sb-n">Accelerator</div></div>
+      <div class="sb-r" onclick="setFT('Hedge Fund',this)"><div class="sb-d" style="background:#F07070"></div><div class="sb-n">Hedge Fund</div></div>
+      <div class="sb-div"></div>
+      <div class="sb-t">Tier</div>
+      <div class="sb-r" onclick="setFTier(1,this)"><div class="sb-d" style="background:#ca8a04"></div><div class="sb-n">Tier 1</div></div>
+      <div class="sb-r" onclick="setFTier(2,this)"><div class="sb-d" style="background:var(--t3)"></div><div class="sb-n">Tier 2</div></div>
+    </div>
+    <div class="fc">
+      <div class="fbar">
+        <div class="sw"><span class="si">⌕</span><input type="text" id="fsrch" placeholder="Search fund…" oninput="renderF()"></div>
+        <select class="sel" id="fsrt" onchange="renderF()">
+          <option value="c">↓ Portfolio size</option>
+          <option value="r">↓ Deployed</option>
+          <option value="n">A→Z</option>
+        </select>
+        <div class="cl" id="fcnt">0 funds</div>
+      </div>
+      <div class="fsc"><table class="ft">
+        <thead><tr><th>#</th><th>Fund</th><th>Type</th><th>Tier</th><th class="s">Portfolio ↓</th><th>Deployed</th><th>Companies</th></tr></thead>
+        <tbody id="ftb"></tbody>
+      </table></div>
+    </div>
+    <div class="fd" id="fdet">
+      <div class="fde" id="fde"><div style="font-size:28px;opacity:.3">🏦</div><div style="font-size:13px;font-weight:600;color:var(--t2)">Select a fund</div><div style="font-size:12px">Click a row to see portfolio</div></div>
+      <div id="fdc" style="display:none;flex-direction:column;flex:1;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- NEWS -->
+<div class="page" id="page-news">
+  <div class="ph"><div style="font-size:32px;opacity:.3">📰</div><div style="font-size:14px;font-weight:600;color:var(--t2)">News</div><div style="font-size:12px">Coming next sprint</div></div>
+</div>
+
+<!-- DRAWER -->
+<div class="ov" id="ov" onclick="closeDW()"></div>
+<div class="dw" id="dw">
+  <div class="dwh">
+    <div>
+      <div id="dwl" style="width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px"></div>
+      <div id="dwn" style="font-size:15px;font-weight:700;color:var(--text)"></div>
+      <div id="dws2" style="font-size:11px;color:var(--t3);margin-top:2px"></div>
+    </div>
+    <button class="dwx" onclick="closeDW()">✕</button>
+  </div>
+  <div class="dwb" id="dwb"></div>
+</div>
+
+<script>
+var D=[
+  {n:'Formation Bio',s:'Drug Development AI',sec:'Health',sc:'#16a34a',st:'Series C',r:248,v:1100,e:320,y:2018,pf:false,inv:['a16z Bio','Sequoia','Google Ventures']},
+  {n:'EvenUp',s:'Personal Injury Law',sec:'Legal',sc:'#7c3aed',st:'Series C',r:135,v:600,e:290,y:2019,pf:false,inv:['SignalFire','Bessemer','Accel']},
+  {n:'Prosper',s:'RCM Platform',sec:'Health',sc:'#16a34a',st:'Series B',r:127,v:480,e:210,y:2020,pf:true,inv:['Emergence Capital','a16z','GV']},
+  {n:'Harper',s:'Commercial Insurance',sec:'Financial',sc:'#2563eb',st:'Series B',r:110,v:450,e:230,y:2019,pf:true,inv:['Emergence Capital','Ribbit Capital','QED']},
+  {n:'Crosby',s:'Contract Lifecycle',sec:'Legal',sc:'#7c3aed',st:'Series B',r:95,v:380,e:180,y:2019,pf:true,inv:['Emergence Capital','Tiger Global','Salesforce Ventures']},
+  {n:'Scale Medicine',s:'Precision Medicine',sec:'Health',sc:'#16a34a',st:'Series B',r:89,v:360,e:145,y:2020,pf:true,inv:['Emergence Capital','Flagship Pioneering']},
+  {n:'Mechanical Orchard',s:'Legacy Modernization',sec:'Software',sc:'#d97706',st:'Series B',r:75,v:310,e:190,y:2020,pf:true,inv:['Emergence Capital','Salesforce Ventures']},
+  {n:'Irving',s:'M&A Diligence',sec:'Legal',sc:'#7c3aed',st:'Series A',r:45,v:190,e:95,y:2021,pf:true,inv:['Emergence Capital','Index Ventures']},
+  {n:'LightTable',s:'Construction AI',sec:'Industrial',sc:'#b45309',st:'Series A',r:42,v:170,e:88,y:2021,pf:false,inv:['Lux Capital','Founders Fund']},
+  {n:'Tessera',s:'API Integration',sec:'Software',sc:'#d97706',st:'Series A',r:41,v:165,e:90,y:2021,pf:false,inv:['Sequoia','NEA']},
+  {n:'AirOps',s:'GTM Automation',sec:'GTM',sc:'#0891b2',st:'Series A',r:38,v:155,e:80,y:2021,pf:false,inv:['Gradient Ventures','Boldstart']},
+  {n:'XBOW',s:'Autonomous Pentesting',sec:'Security',sc:'#dc2626',st:'Series A',r:35,v:150,e:75,y:2022,pf:false,inv:['Sequoia','Khosla Ventures']},
+  {n:'Outbound AI',s:'Voice AI',sec:'Health',sc:'#16a34a',st:'Series A',r:34,v:140,e:85,y:2021,pf:false,inv:['General Catalyst','Bessemer']},
+  {n:'Tribe AI',s:'AI Consulting',sec:'AI Impl.',sc:'#15803d',st:'Series A',r:33,v:130,e:120,y:2019,pf:true,inv:['Emergence Capital','Homebrew']},
+  {n:'Rivet',s:'Accounting AI',sec:'Financial',sc:'#2563eb',st:'Series A',r:31,v:120,e:70,y:2021,pf:true,inv:['Emergence Capital','Accel']},
+  {n:'Rubie',s:'QA Automation',sec:'Software',sc:'#d97706',st:'Series A',r:28,v:110,e:65,y:2022,pf:true,inv:['Emergence Capital','Boldstart']},
+  {n:'Norm AI',s:'Regulatory Compliance',sec:'Legal',sc:'#7c3aed',st:'Series A',r:27,v:110,e:60,y:2022,pf:false,inv:['Coatue','Index Ventures']},
+  {n:'Docshield',s:'Document Automation',sec:'Financial',sc:'#2563eb',st:'Series A',r:22,v:90,e:48,y:2022,pf:false,inv:['Gradient Ventures','Fin Capital']},
+  {n:'RunSybil',s:'AI Red Teaming',sec:'Security',sc:'#dc2626',st:'Seed',r:12,v:55,e:28,y:2023,pf:true,inv:['Emergence Capital','Y Combinator']},
+  {n:'Evidenza',s:'Market Research AI',sec:'GTM',sc:'#0891b2',st:'Seed',r:8,v:38,e:22,y:2023,pf:false,inv:['Y Combinator','Pear VC']}
+];
+var FM={
+  'Emergence Capital':{type:'VC',tier:1,focus:['Health AI','Legal AI','Financial AI'],aum:'$2.8B'},
+  'a16z Bio':{type:'CVC',tier:1,focus:['Bio','Health AI'],aum:'$3B'},
+  'a16z':{type:'VC',tier:1,focus:['AI/ML','Enterprise'],aum:'$35B'},
+  'Sequoia':{type:'VC',tier:1,focus:['Enterprise','AI'],aum:'$85B'},
+  'Google Ventures':{type:'CVC',tier:1,focus:['AI','Life Sciences'],aum:'$8B'},
+  'GV':{type:'CVC',tier:1,focus:['AI'],aum:'$8B'},
+  'SignalFire':{type:'VC',tier:2,focus:['Data','AI'],aum:'$1.5B'},
+  'Bessemer':{type:'VC',tier:1,focus:['Cloud','Security'],aum:'$20B'},
+  'Accel':{type:'VC',tier:1,focus:['Enterprise SaaS'],aum:'$14B'},
+  'Ribbit Capital':{type:'VC',tier:2,focus:['Fintech'],aum:'$2.4B'},
+  'QED':{type:'VC',tier:2,focus:['Fintech'],aum:'$1.8B'},
+  'Tiger Global':{type:'Hedge Fund',tier:1,focus:['SaaS'],aum:'$50B'},
+  'Salesforce Ventures':{type:'CVC',tier:1,focus:['Enterprise SaaS'],aum:'$3B'},
+  'Flagship Pioneering':{type:'VC',tier:1,focus:['Bio'],aum:'$4B'},
+  'Index Ventures':{type:'VC',tier:1,focus:['Enterprise'],aum:'$10B'},
+  'Lux Capital':{type:'VC',tier:2,focus:['Deep Tech'],aum:'$4.5B'},
+  'Founders Fund':{type:'VC',tier:1,focus:['Deep Tech'],aum:'$11B'},
+  'NEA':{type:'VC',tier:1,focus:['Enterprise'],aum:'$25B'},
+  'Gradient Ventures':{type:'CVC',tier:2,focus:['AI-first'],aum:'$1B'},
+  'Boldstart':{type:'VC',tier:2,focus:['Dev Tools'],aum:'$0.4B'},
+  'Khosla Ventures':{type:'VC',tier:1,focus:['Deep Tech','AI'],aum:'$15B'},
+  'General Catalyst':{type:'VC',tier:1,focus:['Health','Enterprise'],aum:'$20B'},
+  'Homebrew':{type:'VC',tier:2,focus:['Enterprise'],aum:'$0.3B'},
+  'Coatue':{type:'Hedge Fund',tier:1,focus:['Tech','AI'],aum:'$50B'},
+  'Fin Capital':{type:'VC',tier:2,focus:['Fintech'],aum:'$0.7B'},
+  'Y Combinator':{type:'Accelerator',tier:1,focus:['All sectors'],aum:'N/A'},
+  'Pear VC':{type:'VC',tier:2,focus:['Enterprise'],aum:'$0.5B'}
+};
+var SECTS=[
+  {n:'All',c:'var(--text)',sl:'',cnt:20},
+  {n:'Health',c:'#16a34a',sl:'Health',cnt:4},
+  {n:'Software Impl.',c:'#d97706',sl:'Software',cnt:3},
+  {n:'Financial',c:'#2563eb',sl:'Financial',cnt:3},
+  {n:'Legal',c:'#7c3aed',sl:'Legal',cnt:4},
+  {n:'Security',c:'#dc2626',sl:'Security',cnt:2},
+  {n:'GTM',c:'#0891b2',sl:'GTM',cnt:2},
+  {n:'Industrial',c:'#b45309',sl:'Industrial',cnt:1},
+  {n:'AI Impl.',c:'#15803d',sl:'AI Impl.',cnt:1}
+];
+
+function buildFunds(){
+  var m={};
+  for(var i=0;i<D.length;i++){
+    var co=D[i];
+    for(var j=0;j<co.inv.length;j++){
+      var inv=co.inv[j];
+      if(!m[inv]) m[inv]={n:inv,cos:[],raised:0,type:'VC',tier:2,focus:[],aum:'N/A'};
+      m[inv].cos.push(co);
+      m[inv].raised+=co.r;
+      if(FM[inv]){m[inv].type=FM[inv].type;m[inv].tier=FM[inv].tier;m[inv].focus=FM[inv].focus;m[inv].aum=FM[inv].aum;}
+    }
+  }
+  var arr=[];
+  for(var k in m) arr.push(m[k]);
+  arr.sort(function(a,b){return b.cos.length-a.cos.length||b.raised-a.raised;});
+  return arr;
+}
+var FUNDS=buildFunds();
+
+var sec='',pf=false,vw='t',afund=null,ftype='',ftier=0;
+
+function ini(n){return n.split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();}
+function fmt(n){if(!n)return'—';if(n>=1000)return'$'+(n/1000).toFixed(1)+'B';return'$'+n+'M';}
+
+// Build left sidebar
+var sbl=document.getElementById('sbl');
+SECTS.forEach(function(s,i){
+  var d=document.createElement('div');
+  d.className='sb-r'+(i===0?' on':'');
+  d.innerHTML='<div class="sb-d" style="background:'+s.c+'"></div><div class="sb-n">'+s.n+'</div><div class="sb-c">'+s.cnt+'</div>';
+  d.onclick=function(){sec=s.sl;document.querySelectorAll('#sbl .sb-r').forEach(function(r){r.classList.remove('on');});d.classList.add('on');render();};
+  sbl.appendChild(d);
+});
+var sbst=document.getElementById('sbst');
+['Seed','Series A','Series B','Series C'].forEach(function(s,i){
+  var d=document.createElement('div');d.className='sb-r';
+  d.innerHTML='<div class="sb-d" style="background:var(--t3)"></div><div class="sb-n">'+s+'</div><div class="sb-c">'+[2,9,7,2][i]+'</div>';
+  sbst.appendChild(d);
+});
+
+document.getElementById('fttl').textContent=FUNDS.length;
+
+function filtered(){
+  var q=(document.getElementById('srch').value||'').toLowerCase();
+  var s=document.getElementById('srt').value;
+  var data=[];
+  for(var i=0;i<D.length;i++) data.push(D[i]);
+  if(sec) data=data.filter(function(c){return c.sec===sec;});
+  if(pf) data=data.filter(function(c){return c.pf;});
+  if(q) data=data.filter(function(c){return c.n.toLowerCase().indexOf(q)>=0||c.s.toLowerCase().indexOf(q)>=0||c.inv.join(' ').toLowerCase().indexOf(q)>=0;});
+  data.sort(function(a,b){
+    if(s==='n') return a.n.localeCompare(b.n);
+    if(s==='v') return b.v-a.v;
+    if(s==='e') return b.e-a.e;
+    if(s==='y') return b.y-a.y;
+    return b.r-a.r;
+  });
+  return data;
+}
+
+function render(){
+  var data=filtered();
+  document.getElementById('cnt').textContent=data.length+' companies';
+  // table
+  var th='';
+  for(var i=0;i<data.length;i++){
+    var co=data[i];
+    th+='<tr onclick="openDW(\''+co.n+'\')">';
+    th+='<td class="mu">'+(i+1)+'</td>';
+    th+='<td><div class="tc"><div class="cl2">'+ini(co.n)+'</div><div><div class="cn">'+co.n+(co.pf?'<span class="bpf">★</span>':'')+'</div><div class="cs">'+co.s+'</div></div></div></td>';
+    th+='<td><span class="sd" style="background:'+co.sc+'"></span>'+co.sec+'</td>';
+
+    var ic='';for(var j=0;j<co.inv.length;j++){if(j<2)ic+='<span class="ich">'+co.inv[j]+'</span> ';else if(j===2)ic+='<span class="ich mu">+'+(co.inv.length-2)+'</span>';}
+    th+='<td><div style="display:flex;gap:4px;flex-wrap:wrap">'+ic+'</div></td>';
+    th+='<td class="mn gr">'+fmt(co.r)+'</td>';
+    th+='<td class="mn">'+fmt(co.v)+'</td>';
+    th+='<td class="mn">'+co.e+'</td>';
+    th+='<td class="mn mu">'+co.y+'</td>';
+    th+='</tr>';
+  }
+  document.getElementById('tb').innerHTML=th;
+  // grid
+  var gh='';
+  for(var i=0;i<data.length;i++){
+    var co=data[i];
+    gh+='<div class="gc" onclick="openDW(\''+co.n+'\')">';
+    gh+='<div class="gc-top"><div class="cl2">'+ini(co.n)+'</div><div style="flex:1;min-width:0"><div class="cn">'+co.n+(co.pf?'<span class="bpf">★</span>':'')+'</div><div class="cs">'+co.s+'</div><span class="bst" style="margin-left:0;margin-top:3px">'+co.st+'</span></div></div>';
+    gh+='<div class="gm"><div class="gmi"><div class="gmv g">'+fmt(co.r)+'</div><div class="gml">Raised</div></div><div class="gmi"><div class="gmv">'+fmt(co.v)+'</div><div class="gml">Val.</div></div><div class="gmi"><div class="gmv">'+co.e+'</div><div class="gml">Emp.</div></div></div>';
+    gh+='</div>';
+  }
+  document.getElementById('gg').innerHTML=gh;
+}
+
+function clearSec(){sec='';document.querySelectorAll('#sbl .sb-r').forEach(function(r,i){r.classList.toggle('on',i===0);});render();}
+function togglePF(row){pf=!pf;row.classList.toggle('on',pf);document.getElementById('pfpill').classList.toggle('on',pf);render();}
+function togglePF2(){pf=!pf;document.getElementById('pfrow').classList.toggle('on',pf);document.getElementById('pfpill').classList.toggle('on',pf);render();}
+function setV(v,btn){vw=v;document.querySelectorAll('.vb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');document.getElementById('tv').style.display=v==='t'?'flex':'none';document.getElementById('gv').style.display=v==='g'?'flex':'none';document.getElementById('tv').style.flexDirection='column';}
+
+// FUNDS
+function filteredF(){
+  var q=(document.getElementById('fsrch').value||'').toLowerCase();
+  var s=document.getElementById('fsrt').value;
+  var data=[];for(var i=0;i<FUNDS.length;i++) data.push(FUNDS[i]);
+  if(ftype) data=data.filter(function(f){return f.type===ftype;});
+  if(ftier) data=data.filter(function(f){return f.tier===ftier;});
+  if(q) data=data.filter(function(f){return f.n.toLowerCase().indexOf(q)>=0;});
+  data.sort(function(a,b){return s==='r'?b.raised-a.raised:s==='n'?a.n.localeCompare(b.n):b.cos.length-a.cos.length;});
+  return data;
+}
+function renderF(){
+  var data=filteredF();
+  document.getElementById('fcnt').textContent=data.length+' funds';
+  var h='';
+  for(var i=0;i<data.length;i++){
+    var f=data[i];
+    var pfc=f.cos.filter(function(c){return c.pf;});
+    var isOn=afund&&afund.n===f.n;
+    h+='<tr class="'+(isOn?'on':'')+'" onclick="selFund(\''+f.n+'\',this)">';
+    h+='<td class="mu">'+(i+1)+'</td>';
+    h+='<td><div class="fnc"><div class="fl2">'+ini(f.n)+'</div><div><div class="fn">'+f.n+'</div><div class="ftp">'+f.aum+'</div></div></div></td>';
+    h+='<td style="font-size:11px;color:var(--t2)">'+f.type+'</td>';
+    h+='<td><span class="'+(f.tier===1?'t1':'t2c')+'">T'+f.tier+'</span></td>';
+    h+='<td class="mn gr">'+f.cos.length+' <span class="mu" style="font-size:10px">('+pfc.length+' pf)</span></td>';
+    h+='<td class="mn">'+fmt(f.raised)+'</td>';
+    h+='<td><div class="ct">';
+    var prev=f.cos.slice(0,3);
+    for(var j=0;j<prev.length;j++) h+='<span class="ctag'+(prev[j].pf?' p':'')+'">'+prev[j].n.split(' ')[0]+'</span>';
+    if(f.cos.length>3) h+='<span class="ctag">+'+(f.cos.length-3)+'</span>';
+    h+='</div></td></tr>';
+  }
+  document.getElementById('ftb').innerHTML=h;
+}
+function selFund(name,row){
+  afund=null;
+  for(var i=0;i<FUNDS.length;i++){if(FUNDS[i].n===name){afund=FUNDS[i];break;}}
+  document.querySelectorAll('#ftb tr').forEach(function(r){r.classList.remove('on');});
+  row.classList.add('on');
+  document.getElementById('fde').style.display='none';
+  var fc=document.getElementById('fdc');
+  fc.style.display='flex';fc.style.flexDirection='column';fc.style.flex='1';fc.style.overflowY='auto';
+  var pfc=afund.cos.filter(function(c){return c.pf;});
+  var oth=afund.cos.filter(function(c){return !c.pf;});
+  function rows(list){
+    var h='';
+    for(var i=0;i<list.length;i++){
+      var co=list[i];
+      h+='<div class="fdc" onclick="openDW(\''+co.n+'\')">';
+      h+='<div class="cl2" style="width:22px;height:22px;font-size:7px;border-radius:5px">'+ini(co.n)+'</div>';
+      h+='<div style="flex:1"><div class="fdcn">'+co.n+'</div><div style="font-size:10px;color:var(--t3)">'+co.s+' · '+co.sec+'</div></div>';
+      h+='<div style="text-align:right"><div class="fdcr">'+fmt(co.r)+'</div><div class="fdcs">'+co.st+'</div></div>';
+      h+='</div>';
+    }
+    return h;
+  }
+  var ftags='';
+  if(afund.focus){for(var i=0;i<afund.focus.length;i++) ftags+='<span class="ftag">'+afund.focus[i]+'</span>';}
+  fc.innerHTML=
+    '<div class="fdh"><div class="fdl">'+ini(afund.n)+'</div><div class="fdn">'+afund.n+'</div><div class="fds">'+afund.type+(afund.aum!=='N/A'?' · AUM: '+afund.aum:'')+'</div></div>'
+    +'<div class="fdb">'
+    +'<div class="fdsec"><div class="fdst">Key metrics</div><div class="fdg">'
+    +'<div class="fdm"><div class="fdmv g">'+afund.cos.length+'</div><div class="fdml">AI companies</div></div>'
+    +'<div class="fdm"><div class="fdmv">'+fmt(afund.raised)+'</div><div class="fdml">Deployed</div></div>'
+    +'<div class="fdm"><div class="fdmv">'+pfc.length+'</div><div class="fdml">Portfolio cos.</div></div>'
+    +'<div class="fdm"><div class="fdmv">Tier '+afund.tier+'</div><div class="fdml">Ranking</div></div>'
+    +'</div></div>'
+    +(ftags?'<div class="fdsec"><div class="fdst">Focus</div><div style="display:flex;flex-wrap:wrap;gap:5px">'+ftags+'</div></div>':'')
+    +(pfc.length?'<div class="fdsec"><div class="fdst">★ Portfolio ('+pfc.length+')</div>'+rows(pfc)+'</div>':'')
+    +(oth.length?'<div class="fdsec"><div class="fdst">Co-investments ('+oth.length+')</div>'+rows(oth)+'</div>':'')
+    +'</div>';
+}
+function setFT(t,btn){ftype=t;document.querySelectorAll('.fsb .sb-r').forEach(function(r){r.classList.remove('on');});btn.classList.add('on');renderF();}
+function setFTier(t,btn){ftier=ftier===t?0:t;document.querySelectorAll('.fsb .sb-r').forEach(function(r){r.classList.remove('on');});if(ftier)btn.classList.add('on');else document.querySelector('.fsb .sb-r').classList.add('on');renderF();}
+
+// DRAWER
+function openDW(name){
+  var co=null;for(var i=0;i<D.length;i++){if(D[i].n===name){co=D[i];break;}}
+  if(!co) return;
+  document.getElementById('dwl').textContent=ini(co.n);
+  document.getElementById('dwn').textContent=co.n;
+  document.getElementById('dws2').textContent=co.s+' · '+co.sec;
+  var ir='';
+  for(var i=0;i<co.inv.length;i++){
+    var inv=co.inv[i];
+    var f=null;for(var j=0;j<FUNDS.length;j++){if(FUNDS[j].n===inv){f=FUNDS[j];break;}}
+    ir+='<div class="dwr" onclick="goFund(\''+inv+'\')">';
+    ir+='<div class="cl2" style="width:22px;height:22px;font-size:7px;border-radius:5px">'+ini(inv)+'</div>';
+    ir+='<div style="flex:1"><div class="dwrn">'+inv+'</div>'+(f?'<div class="dwrs">'+f.type+' · '+f.cos.length+' cos.</div>':'')+'</div>';
+    ir+='<div class="dwra">→ Funds</div></div>';
+  }
+  document.getElementById('dwb').innerHTML=
+    '<div class="dws"><div class="dwst">Key metrics</div><div class="dwg">'
+    +'<div class="dwm"><div class="dwmv g">'+fmt(co.r)+'</div><div class="dwml">Raised</div></div>'
+    +'<div class="dwm"><div class="dwmv">'+fmt(co.v)+'</div><div class="dwml">Valuation</div></div>'
+    +'<div class="dwm"><div class="dwmv">'+co.e+'</div><div class="dwml">Employees</div></div>'
+    +'<div class="dwm"><div class="dwmv">'+co.y+'</div><div class="dwml">Founded</div></div>'
+    +'</div></div>'
+    +'<div class="dws"><div class="dwst">Classification</div>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap">'
+    +'<span class="bst" style="font-size:11px;padding:3px 8px;margin-left:0">'+co.st+'</span>'
+    +'<span style="padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;background:var(--bg3);border:1px solid var(--border);color:var(--t2)">'+co.sec+'</span>'
+    +(co.pf?'<span class="bpf" style="font-size:11px;padding:3px 8px;margin-left:0">★ Portfolio</span>':'')
+    +'</div></div>'
+    +'<div class="dws"><div class="dwst">Investors ('+co.inv.length+')</div>'+ir+'</div>';
+  document.getElementById('ov').classList.add('on');
+  document.getElementById('dw').classList.add('on');
+}
+function goFund(name){
+  closeDW();
+  goPage('funds',document.querySelectorAll('.tab')[2]);
+  setTimeout(function(){
+    renderF();
+    var rows=document.querySelectorAll('#ftb tr');
+    for(var i=0;i<rows.length;i++){
+      var nm=rows[i].querySelector('.fn');
+      if(nm&&nm.textContent===name){selFund(name,rows[i]);break;}
+    }
+  },60);
+}
+function closeDW(){document.getElementById('ov').classList.remove('on');document.getElementById('dw').classList.remove('on');}
+
+function goPage(name,tab){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.getElementById('page-'+name).classList.add('on');
+  if(tab) tab.classList.add('on');
+  if(name==='funds') renderF();
+}
+
+var dark=true;
+function toggleTheme(){dark=!dark;document.body.setAttribute('data-theme',dark?'dark':'light');document.getElementById('thbtn').textContent=dark?'☀':'☾';}
+
+render();
+</script>
+</body>
+</html>
