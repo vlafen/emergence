@@ -87,6 +87,8 @@ export default function DashboardPage(){
   const [pinned,setPinned]=useState(false)
   const [hovered,setHovered]=useState(false)
   const [menuOpen,setMenuOpen]=useState(false)
+  const [secOpen,setSecOpen]=useState(false)
+  const [stgOpen,setStgOpen]=useState(false)
   const [cmdOpen,setCmdOpen]=useState(false)
   const [cmdQ,setCmdQ]=useState('')
   const [cmdSel,setCmdSel]=useState(0)
@@ -146,7 +148,7 @@ export default function DashboardPage(){
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif}
         html[data-theme=dark]{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);--text:#f0f4fa;--t2:#c8d4e8;--t3:rgba(200,212,232,.42);--ac:#2563EB;--ac-bg:rgba(37,99,235,.1);--ac-b:rgba(37,99,235,.26);--ac-t:#7aaff7;--sb:#0c0c14;--top:#0e0e18}
-        html[data-theme=light]{--bg:#eef0f2;--bg2:#ffffff;--bg3:#f4f5f6;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);--text:#111;--t2:#222;--t3:rgba(0,0,0,.42);--ac:#2563EB;--ac-bg:rgba(37,99,235,.07);--ac-b:rgba(37,99,235,.2);--ac-t:#1d4ed8;--sb:#fff;--top:#fff}
+        html[data-theme=light]{--bg:#f6f7f9;--bg2:#ffffff;--bg3:#f0f2f5;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);--text:#111111;--t2:#1a1a1a;--t3:rgba(0,0,0,.4);--ac:#2563EB;--ac-bg:rgba(37,99,235,.07);--ac-b:rgba(37,99,235,.2);--ac-t:#1d4ed8;--sb:#ffffff;--top:#ffffff}
         .ni{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--t3);transition:all .12s;font-size:13px;border-left:2px solid transparent;margin-bottom:1px;white-space:nowrap;overflow:hidden}
         .ni:hover{background:rgba(37,99,235,.07);color:var(--t2)}
         .ni.on{background:var(--ac-bg);color:var(--ac-t);border-left-color:var(--ac);font-weight:500}
@@ -245,18 +247,23 @@ export default function DashboardPage(){
                 {menuOpen&&(
                   <>
                     <div style={{position:'fixed',inset:0,zIndex:100}} onClick={()=>setMenuOpen(false)}/>
-                    <div style={{position:'absolute',top:40,right:0,width:200,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,boxShadow:'0 8px 32px rgba(0,0,0,.2)',padding:12,zIndex:200}}>
-                      <div style={{fontSize:11,color:'var(--t3)',marginBottom:8,padding:'0 2px',textTransform:'uppercase',letterSpacing:'.06em',fontWeight:600}}>Appearance</div>
-                      <div style={{display:'flex',gap:5,marginBottom:12}}>
-                        {([['☀','light'],['☾','dark']] as [string,'light'|'dark'][]).map(([icon,t])=>(
-                          <button key={t} onClick={()=>{if(theme!==t)toggleTheme()}} style={{flex:1,padding:'7px',borderRadius:7,border:`1px solid ${theme===t?'var(--ac-b)':'var(--border)'}`,background:theme===t?'var(--ac-bg)':'var(--bg3)',cursor:'pointer',color:theme===t?'var(--ac-t)':'var(--t3)',fontSize:16,transition:'all .12s',display:'flex',alignItems:'center',justifyContent:'center',gap:4}}>
-                            {icon}{theme===t&&<span style={{fontSize:9}}>✓</span>}
+                    <div style={{position:'absolute',top:40,right:0,width:220,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,boxShadow:'0 8px 32px rgba(0,0,0,.2)',padding:'10px 10px 8px',zIndex:200}}>
+                      <div style={{fontSize:11,color:'var(--t3)',marginBottom:8,padding:'0 4px',textTransform:'uppercase',letterSpacing:'.07em',fontWeight:600}}>Appearance</div>
+                      {/* 3 compact theme buttons: light / dark / system */}
+                      <div style={{display:'flex',gap:4,marginBottom:10,background:'var(--bg3)',borderRadius:8,padding:3}}>
+                        {([
+                          {t:'light',svg:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,label:'Light'},
+                          {t:'dark',svg:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,label:'Dark'},
+                          {t:'system',svg:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,label:'System'},
+                        ] as any[]).map(({t,svg,label})=>(
+                          <button key={t} onClick={()=>{if(t!=='system'&&theme!==t as any)toggleTheme()}} title={label} style={{flex:1,height:28,borderRadius:6,border:'none',background:theme===t?'var(--bg2)':'transparent',cursor:'pointer',color:theme===t?'var(--ac-t)':'var(--t3)',transition:'all .12s',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:theme===t?'0 1px 3px rgba(0,0,0,.12)':'none'}}>
+                            {svg}
                           </button>
                         ))}
                       </div>
-                      <div style={{height:1,background:'var(--border)',margin:'0 0 8px'}}/>
+                      <div style={{height:1,background:'var(--border)',margin:'0 -2px 8px'}}/>
                       {[['◈','Funds','/funds'],['☆','Watchlist','/watchlist']].map(([icon,label,href])=>(
-                        <div key={label} onClick={()=>{router.push(href);setMenuOpen(false)}} style={{display:'flex',alignItems:'center',gap:9,padding:'7px 6px',borderRadius:7,cursor:'pointer',fontSize:13,color:'var(--t2)'}} onMouseOver={e=>(e.currentTarget.style.background='var(--bg3)')} onMouseOut={e=>(e.currentTarget.style.background='transparent')}>
+                        <div key={label} onClick={()=>{router.push(href);setMenuOpen(false)}} style={{display:'flex',alignItems:'center',gap:9,padding:'7px 8px',borderRadius:7,cursor:'pointer',fontSize:13,color:'var(--t2)'}} onMouseOver={e=>(e.currentTarget.style.background='var(--bg3)')} onMouseOut={e=>(e.currentTarget.style.background='transparent')}>
                           <span>{icon}</span>{label}
                           {label==='Watchlist'&&wl.size>0&&<span style={{marginLeft:'auto',fontSize:10,background:'var(--ac-bg)',color:'var(--ac-t)',padding:'1px 6px',borderRadius:8}}>{wl.size}</span>}
                         </div>
@@ -282,21 +289,55 @@ export default function DashboardPage(){
             </div>
 
             {/* FILTER BAR */}
-            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
-              <div className="fscroll" style={{display:'flex',alignItems:'center',gap:5,flex:1,overflowX:'auto',paddingBottom:2}}>
-                <span style={{fontSize:9,color:'var(--t3)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginRight:2,flexShrink:0}}>Sector</span>
-                {SECTS.map(s=>(
-                  <div key={s.n} className={`pill${sec===s.sl?' on':''}`} onClick={()=>setSec(sec===s.sl?'':s.sl)}>
-                    {s.n!=='All'&&<span style={{width:5,height:5,borderRadius:'50%',background:s.c,display:'inline-block'}}/>}{s.n}
-                  </div>
-                ))}
-                <div style={{width:1,height:18,background:'var(--border)',margin:'0 4px',flexShrink:0}}/>
-                <span style={{fontSize:9,color:'var(--t3)',fontWeight:700,letterSpacing:'.1em',textTransform:'uppercase',marginRight:2,flexShrink:0}}>Stage</span>
-                {STAGES.map(st=>(
-                  <div key={st} className={`pill${stage===st?' on':''}`} onClick={()=>setStage(stage===st?'':st)}>{st}</div>
-                ))}
+            <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:12}}>
+              {/* Sector dropdown */}
+              <div style={{position:'relative'}}>
+                <button onClick={()=>{setSecOpen(o=>!o);setStgOpen(false)}} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 12px',border:`1px solid ${sec?'var(--ac-b)':'var(--border)'}`,borderRadius:7,background:sec?'var(--ac-bg)':'var(--bg2)',color:sec?'var(--ac-t)':'var(--t2)',fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",height:32,transition:'all .12s'}}>
+                  {sec?<><span style={{width:5,height:5,borderRadius:'50%',background:SECTS.find(s=>s.sl===sec)?.c,display:'inline-block'}}/>{sec}</>:'Sector'}
+                  <span style={{fontSize:9,color:'var(--t3)',marginLeft:2}}>▾</span>
+                </button>
+                {secOpen&&(
+                  <>
+                    <div style={{position:'fixed',inset:0,zIndex:90}} onClick={()=>setSecOpen(false)}/>
+                    <div style={{position:'absolute',top:36,left:0,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:9,boxShadow:'0 6px 24px rgba(0,0,0,.15)',padding:6,zIndex:200,minWidth:160}}>
+                      {SECTS.map(s=>(
+                        <div key={s.n} onClick={()=>{setSec(s.sl);setSecOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:sec===s.sl?'var(--ac-t)':'var(--t2)',background:sec===s.sl?'var(--ac-bg)':'transparent',transition:'background .1s'}} onMouseOver={e=>{if(sec!==s.sl)(e.currentTarget as HTMLDivElement).style.background='var(--bg3)'}} onMouseOut={e=>{if(sec!==s.sl)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                          {s.n!=='All'&&<span style={{width:7,height:7,borderRadius:'50%',background:s.c,display:'inline-block',flexShrink:0}}/>}
+                          {s.n==='All'&&<span style={{width:7,height:7,flexShrink:0}}/>}
+                          <span style={{flex:1}}>{s.n}</span>
+                          {sec===s.sl&&<span style={{fontSize:10}}>✓</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
-              <div style={{display:'flex',alignItems:'center',gap:5,flexShrink:0}}>
+
+              {/* Stage dropdown */}
+              <div style={{position:'relative'}}>
+                <button onClick={()=>{setStgOpen(o=>!o);setSecOpen(false)}} style={{display:'flex',alignItems:'center',gap:6,padding:'6px 12px',border:`1px solid ${stage?'var(--ac-b)':'var(--border)'}`,borderRadius:7,background:stage?'var(--ac-bg)':'var(--bg2)',color:stage?'var(--ac-t)':'var(--t2)',fontSize:12,fontWeight:500,cursor:'pointer',fontFamily:"'DM Sans',sans-serif",height:32,transition:'all .12s'}}>
+                  {stage||'Stage'}<span style={{fontSize:9,color:'var(--t3)',marginLeft:2}}>▾</span>
+                </button>
+                {stgOpen&&(
+                  <>
+                    <div style={{position:'fixed',inset:0,zIndex:90}} onClick={()=>setStgOpen(false)}/>
+                    <div style={{position:'absolute',top:36,left:0,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:9,boxShadow:'0 6px 24px rgba(0,0,0,.15)',padding:6,zIndex:200,minWidth:130}}>
+                      <div onClick={()=>{setStage('');setStgOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:!stage?'var(--ac-t)':'var(--t2)',background:!stage?'var(--ac-bg)':'transparent'}} onMouseOver={e=>{if(stage)(e.currentTarget as HTMLDivElement).style.background='var(--bg3)'}} onMouseOut={e=>{if(stage)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                        <span style={{flex:1}}>All stages</span>{!stage&&<span style={{fontSize:10}}>✓</span>}
+                      </div>
+                      {STAGES.map(st=>(
+                        <div key={st} onClick={()=>{setStage(st);setStgOpen(false)}} style={{display:'flex',alignItems:'center',gap:8,padding:'7px 10px',borderRadius:6,cursor:'pointer',fontSize:12,color:stage===st?'var(--ac-t)':'var(--t2)',background:stage===st?'var(--ac-bg)':'transparent',transition:'background .1s'}} onMouseOver={e=>{if(stage!==st)(e.currentTarget as HTMLDivElement).style.background='var(--bg3)'}} onMouseOut={e=>{if(stage!==st)(e.currentTarget as HTMLDivElement).style.background='transparent'}}>
+                          <span style={{flex:1}}>{st}</span>{stage===st&&<span style={{fontSize:10}}>✓</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {sec&&<button onClick={()=>setSec('')} style={{padding:'4px 8px',border:'1px solid var(--border)',borderRadius:6,background:'transparent',color:'var(--t3)',fontSize:11,cursor:'pointer',fontFamily:"'DM Sans',sans-serif"}}>✕ Clear</button>}
+
+              <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:5}}>
                 <div style={{position:'relative'}}>
                   <span style={{position:'absolute',left:7,top:'50%',transform:'translateY(-50%)',fontSize:12,color:'var(--t3)',pointerEvents:'none'}}>⌕</span>
                   <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Search…" style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:7,padding:'6px 8px 6px 24px',fontSize:12,color:'var(--text)',fontFamily:"'DM Sans',sans-serif",width:130,outline:'none'}}/>
