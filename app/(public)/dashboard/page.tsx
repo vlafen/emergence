@@ -247,27 +247,19 @@ export default function DashboardPage(){
                 {menuOpen&&(
                   <>
                     <div style={{position:'fixed',inset:0,zIndex:100}} onClick={()=>setMenuOpen(false)}/>
-                    <div style={{position:'absolute',top:40,right:0,width:220,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,boxShadow:'0 8px 32px rgba(0,0,0,.2)',padding:'10px 10px 8px',zIndex:200}}>
-                      <div style={{fontSize:11,color:'var(--t3)',marginBottom:8,padding:'0 4px',textTransform:'uppercase',letterSpacing:'.07em',fontWeight:600}}>Appearance</div>
-                      {/* 3 compact theme buttons: light / dark / system */}
-                      <div style={{display:'flex',gap:4,marginBottom:10,background:'var(--bg3)',borderRadius:8,padding:3}}>
-                        {([
-                          {t:'light',svg:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>,label:'Light'},
-                          {t:'dark',svg:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,label:'Dark'},
-                          {t:'system',svg:<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>,label:'System'},
-                        ] as any[]).map(({t,svg,label})=>(
-                          <button key={t} onClick={()=>{if(t!=='system'&&theme!==t as any)toggleTheme()}} title={label} style={{flex:1,height:28,borderRadius:6,border:'none',background:theme===t?'var(--bg2)':'transparent',cursor:'pointer',color:theme===t?'var(--ac-t)':'var(--t3)',transition:'all .12s',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:theme===t?'0 1px 3px rgba(0,0,0,.12)':'none'}}>
-                            {svg}
-                          </button>
-                        ))}
+                    <div style={{position:'absolute',top:40,right:0,width:180,background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:10,boxShadow:'0 8px 32px rgba(0,0,0,.2)',padding:'10px',zIndex:200}}>
+                      <div style={{fontSize:10,color:'var(--t3)',marginBottom:8,textTransform:'uppercase',letterSpacing:'.08em',fontWeight:700}}>Appearance</div>
+                      <div style={{display:'flex',gap:3,background:'var(--bg3)',borderRadius:8,padding:3}}>
+                        <button onClick={()=>{if(theme!=='light')toggleTheme()}} title="Light" style={{flex:1,height:28,borderRadius:6,border:'none',background:theme==='light'?'var(--bg2)':'transparent',cursor:'pointer',color:theme==='light'?'var(--ac-t)':'var(--t3)',transition:'all .12s',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:theme==='light'?'0 1px 3px rgba(0,0,0,.1)':'none'}}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                        </button>
+                        <button onClick={()=>{if(theme!=='dark')toggleTheme()}} title="Dark" style={{flex:1,height:28,borderRadius:6,border:'none',background:theme==='dark'?'var(--bg2)':'transparent',cursor:'pointer',color:theme==='dark'?'var(--ac-t)':'var(--t3)',transition:'all .12s',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:theme==='dark'?'0 1px 3px rgba(0,0,0,.1)':'none'}}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        </button>
+                        <button onClick={()=>{const m=window.matchMedia('(prefers-color-scheme:dark)').matches;const sys=m?'dark':'light';if(theme!==sys)toggleTheme()}} title="System" style={{flex:1,height:28,borderRadius:6,border:'none',background:'transparent',cursor:'pointer',color:'var(--t3)',transition:'all .12s',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                        </button>
                       </div>
-                      <div style={{height:1,background:'var(--border)',margin:'0 -2px 8px'}}/>
-                      {[['◈','Funds','/funds'],['☆','Watchlist','/watchlist']].map(([icon,label,href])=>(
-                        <div key={label} onClick={()=>{router.push(href);setMenuOpen(false)}} style={{display:'flex',alignItems:'center',gap:9,padding:'7px 8px',borderRadius:7,cursor:'pointer',fontSize:13,color:'var(--t2)'}} onMouseOver={e=>(e.currentTarget.style.background='var(--bg3)')} onMouseOut={e=>(e.currentTarget.style.background='transparent')}>
-                          <span>{icon}</span>{label}
-                          {label==='Watchlist'&&wl.size>0&&<span style={{marginLeft:'auto',fontSize:10,background:'var(--ac-bg)',color:'var(--ac-t)',padding:'1px 6px',borderRadius:8}}>{wl.size}</span>}
-                        </div>
-                      ))}
                     </div>
                   </>
                 )}
