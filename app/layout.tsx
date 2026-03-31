@@ -25,6 +25,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var t = localStorage.getItem('theme') || 'light';
+                  document.documentElement.setAttribute('data-theme', t);
+                } catch(e) {
+                  document.documentElement.setAttribute('data-theme', 'light');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col`}>
         <CommandSearch />
         {children}
