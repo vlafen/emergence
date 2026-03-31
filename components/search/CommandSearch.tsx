@@ -120,8 +120,8 @@ export default function CommandSearch() {
       <div
         style={{
           width: 560,
-          background: '#0d0d1a',
-          border: '1px solid rgba(255,255,255,0.12)',
+          background: 'var(--bg2)',
+          border: '1px solid var(--border2)',
           borderRadius: 14,
           overflow: 'hidden',
           boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
@@ -129,8 +129,8 @@ export default function CommandSearch() {
         onClick={e => e.stopPropagation()}
       >
         {/* INPUT */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-          <span style={{ fontSize: 16, color: 'rgba(255,255,255,0.3)' }}>⌕</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
+          <span style={{ fontSize: 16, color: 'var(--t3)' }}>⌕</span>
           <input
             autoFocus
             value={query}
@@ -138,22 +138,22 @@ export default function CommandSearch() {
             placeholder="Search companies, funds, sectors…"
             style={{
               flex: 1, background: 'transparent', border: 'none', outline: 'none',
-              fontSize: 15, color: '#fff', fontFamily: 'Inter, sans-serif',
+              fontSize: 15, color: 'var(--text)', fontFamily: 'Inter, sans-serif',
             }}
           />
-          <kbd style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.1)' }}>ESC</kbd>
+          <kbd style={{ fontSize: 10, color: 'var(--t3)', background: 'var(--bg3)', padding: '2px 6px', borderRadius: 4, border: '1px solid var(--border)' }}>ESC</kbd>
         </div>
 
         {/* RESULTS */}
         <div style={{ maxHeight: 380, overflowY: 'auto' }}>
           {results.length === 0 && (
-            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
+            <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--t3)', fontSize: 13 }}>
               No results for &ldquo;{query}&rdquo;
             </div>
           )}
 
           {query === '' && (
-            <div style={{ padding: '10px 16px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)' }}>
+            <div style={{ padding: '10px 16px 4px', fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--t3)' }}>
               Recent
             </div>
           )}
@@ -165,8 +165,8 @@ export default function CommandSearch() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '10px 16px',
-                background: i === selected ? 'rgba(92,210,162,0.08)' : 'transparent',
-                borderLeft: i === selected ? '2px solid #5CD2A2' : '2px solid transparent',
+                background: i === selected ? 'var(--ac-bg)' : 'transparent',
+                borderLeft: i === selected ? '2px solid var(--ac)' : '2px solid transparent',
                 cursor: 'pointer', transition: 'background .1s',
               }}
               onMouseEnter={() => setSelected(i)}
@@ -176,26 +176,26 @@ export default function CommandSearch() {
                 width: 32, height: 32, borderRadius: 8, flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 10, fontWeight: 700, color: '#fff',
-                background: r.type === 'company' ? (r.color || '#5CD2A2') : 'rgba(255,255,255,0.08)',
-                border: r.type === 'fund' ? '1px solid rgba(255,255,255,0.1)' : 'none',
+                background: r.type === 'company' ? (r.color || 'var(--ac)') : 'var(--bg3)',
+                border: r.type === 'fund' ? '1px solid var(--border)' : 'none',
               }}>
                 {r.type === 'fund' ? '🏦' : ini(r.name)}
               </div>
 
               {/* Text */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', marginBottom: 2 }}>{r.name}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.sub}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{r.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--t3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.sub}</div>
               </div>
 
               {/* Right badge */}
               {r.raised && (
-                <div style={{ fontSize: 12, fontFamily: 'DM Mono, monospace', fontWeight: 500, color: '#5CD2A2', flexShrink: 0 }}>
+                <div style={{ fontSize: 12, fontFamily: 'DM Mono, monospace', fontWeight: 500, color: 'var(--ac-t)', flexShrink: 0 }}>
                   {r.raised}
                 </div>
               )}
               {r.type === 'fund' && (
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', background: 'rgba(255,255,255,0.05)', padding: '2px 7px', borderRadius: 4, flexShrink: 0 }}>
+                <div style={{ fontSize: 10, color: 'var(--t3)', background: 'var(--bg3)', padding: '2px 7px', borderRadius: 4, flexShrink: 0 }}>
                   Fund
                 </div>
               )}
@@ -204,7 +204,7 @@ export default function CommandSearch() {
         </div>
 
         {/* FOOTER */}
-        <div style={{ padding: '8px 16px', borderTop: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: 12, fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>
+        <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border)', display: 'flex', gap: 12, fontSize: 10, color: 'var(--t3)' }}>
           <span>↑↓ navigate</span>
           <span>↵ select</span>
           <span>ESC close</span>
