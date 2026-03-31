@@ -1,36 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-:root {
-  --bg: #08080f;
-  --bg2: #0d0d1a;
-  --bg3: #111124;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.14);
-  --text: #ffffff;
-  --t2: rgba(255,255,255,0.5);
-  --t3: rgba(255,255,255,1);
-  --ac: #5CD2A2;
-  --ac-bg: rgba(92,210,162,0.08);
-  --ac-b: rgba(92,210,162,0.2);
+:root,
+[data-theme="light"] {
+  --bg: #f4f5f7;
+  --bg2: #ffffff;
+  --bg3: #eef0f3;
+  --border: rgba(0,0,0,0.09);
+  --border2: rgba(0,0,0,0.18);
+  --text: #111111;
+  --t2: #1a1a1a;
+  --t3: rgba(0,0,0,0.45);
+  --ac: #2563EB;
+  --ac-bg: rgba(37,99,235,0.08);
+  --ac-b: rgba(37,99,235,0.22);
+  --ac-t: #1d4ed8;
+  --sb: #ffffff;
+  --top: #ffffff;
 }
 
-[data-theme="light"] {
-  --bg: #faf9f5;
-  --bg2: #f2f0eb;
-  --bg3: #e8e6e0;
-  --border: rgba(0,0,0,0.08);
-  --border2: rgba(0,0,0,0.16);
-  --text: #0f0f0e;
-  --t2: rgba(15,15,14,0.55);
-  --t3: rgba(15,15,14,0.35);
-  --ac: #1a9e6e;
-  --ac-bg: rgba(26,158,110,0.08);
-  --ac-b: rgba(26,158,110,0.2);
+[data-theme="dark"] {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a24;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.15);
+  --text: #ffffff;
+  --t2: #e8edf5;
+  --t3: rgba(255,255,255,0.45);
+  --ac: #2563EB;
+  --ac-bg: rgba(37,99,235,0.1);
+  --ac-b: rgba(37,99,235,0.26);
+  --ac-t: #7aaff7;
+  --sb: #0c0c14;
+  --top: #0e0e18;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
+html, body {
   font-family: 'Inter', sans-serif;
   background: var(--bg);
   color: var(--text);
