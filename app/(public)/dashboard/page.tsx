@@ -83,7 +83,7 @@ export default function DashboardPage(){
   const [selected,setSelected]=useState<Set<string>>(new Set())
   const [wl,setWl]=useState<Set<string>>(new Set())
   const [toast,setToast]=useState('')
-  const [theme,setTheme]=useState<'dark'|'light'>('dark')
+  const [theme,setTheme]=useState<'dark'|'light'>('light')
   const [pinned,setPinned]=useState(false)
   const [hovered,setHovered]=useState(false)
   const [menuOpen,setMenuOpen]=useState(false)
@@ -146,9 +146,9 @@ export default function DashboardPage(){
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
-        *{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif}
+        *{box-sizing:border-box;margin:0;padding:0}html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+        :root,html[data-theme=light]{--bg:#f0f2f5;--bg2:#ffffff;--bg3:#e8eaed;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.16);--text:#0f0f0e;--t2:#1a1a2e;--t3:rgba(0,0,0,.42);--ac:#2563EB;--ac-bg:rgba(37,99,235,.08);--ac-b:rgba(37,99,235,.22);--ac-t:#1d4ed8;--sb:#ffffff;--top:#ffffff}
         html[data-theme=dark]{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.15);--text:#ffffff;--t2:#e8edf5;--t3:rgba(255,255,255,.45);--ac:#2563EB;--ac-bg:rgba(37,99,235,.1);--ac-b:rgba(37,99,235,.26);--ac-t:#7aaff7;--sb:#0c0c14;--top:#0e0e18}
-        html[data-theme=light]{--bg:#f4f5f7;--bg2:#ffffff;--bg3:#eef0f3;--border:rgba(0,0,0,.09);--border2:rgba(0,0,0,.18);--text:#111111;--t2:#1a1a1a;--t3:rgba(0,0,0,.45);--ac:#2563EB;--ac-bg:rgba(37,99,235,.08);--ac-b:rgba(37,99,235,.22);--ac-t:#1d4ed8;--sb:#ffffff;--top:#ffffff}
         .ni{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:6px;cursor:pointer;color:var(--t3);transition:all .12s;font-size:13px;border-left:2px solid transparent;margin-bottom:1px;white-space:nowrap;overflow:hidden}
         .ni:hover{background:rgba(37,99,235,.07);color:var(--t2)}
         .ni.on{background:var(--ac-bg);color:var(--ac-t);border-left-color:var(--ac);font-weight:500}
@@ -170,11 +170,11 @@ export default function DashboardPage(){
 
       {toast&&<div style={{position:'fixed',bottom:24,right:24,zIndex:2000,padding:'10px 18px',borderRadius:8,background:'var(--bg2)',border:'1px solid var(--ac-b)',fontSize:13,fontWeight:500,color:'var(--ac-t)',boxShadow:'0 4px 20px rgba(0,0,0,.25)'}}>{toast}</div>}
 
-      <div data-theme={theme} style={{height:'100vh',display:'flex',overflow:'hidden',background:'var(--bg)',color:'var(--text)'}}>
+      <div style={{height:'100vh',display:'flex',overflow:'hidden',background:'var(--bg)',color:'var(--text)'}}>
 
         {/* SIDEBAR */}
         <aside onMouseEnter={()=>{if(!pinned)setHovered(true)}} onMouseLeave={()=>setHovered(false)}
-          style={{width:expanded?220:52,flexShrink:0,background:'var(--sb)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden',position:pinned?'relative':'absolute',zIndex:60,transition:'width .18s ease',boxShadow:hovered&&!pinned?'6px 0 24px rgba(0,0,0,.15)':'none'}}>
+          style={{width:expanded?220:52,flexShrink:0,background:'var(--sb)',borderRight:'1px solid var(--border)',display:'flex',flexDirection:'column',height:'100vh',overflow:'hidden',position:'relative',zIndex:60,transition:'width .18s ease'}}>
           {/* Logo */}
           <div style={{display:'flex',alignItems:'center',gap:8,padding:'10px',borderBottom:'1px solid var(--border)',flexShrink:0,minHeight:48}}>
             <div onClick={()=>router.push('/')} style={{width:28,height:28,borderRadius:6,background:'var(--ac)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:800,color:'#fff',flexShrink:0,cursor:'pointer'}}>EM</div>
@@ -229,7 +229,7 @@ export default function DashboardPage(){
         </aside>
 
         {/* MAIN */}
-        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',marginLeft:pinned?0:52}}>
+        <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',minWidth:0}}>
 
           {/* TOPBAR */}
           <div style={{height:48,display:'flex',alignItems:'center',padding:'0 12px',background:'var(--top)',borderBottom:'1px solid var(--border)',flexShrink:0,gap:8}}>
